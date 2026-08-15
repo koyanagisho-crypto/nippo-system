@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>運行日報システム｜正光運輸</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#2563eb;--blue-dark:#1d4ed8;--blue-pale:#eff6ff;--blue-soft:#dbeafe;--blue-mid:#93c5fd;
+  --green:#10b981;--green-pale:#d1fae5;--amber:#f59e0b;--amber-pale:#fef3c7;
+  --red:#ef4444;--red-pale:#fef2f2;--white:#fff;--bg:#f0f7ff;--text:#1e3a5f;--text-muted:#64748b;
+  --border:#bfdbfe;--r:12px;--r-sm:8px;
+  --sh:0 1px 4px rgba(37,99,235,.10);--sh-md:0 4px 16px rgba(37,99,235,.14);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;font-size:15px;color:var(--text);background:linear-gradient(150deg,#dbeafe 0%,#f0f9ff 50%,#fef9f0 100%);min-height:100vh}
+
+/* ─ Layout ─ */
+.page{display:none}.page.active{display:block}
+.wrap{width:100%;max-width:860px;margin:0 auto;padding:0 24px}
+@media(max-width:640px){.wrap{padding:0 12px}}
+
+/* ─ Header ─ */
+.hdr{background:linear-gradient(120deg,#1e40af,#2563eb 60%,#0ea5e9);position:sticky;top:0;z-index:200;box-shadow:0 4px 16px rgba(30,64,175,.3)}
+.hdr-inner{display:flex;align-items:center;gap:12px;padding:14px 24px}
+@media(max-width:640px){.hdr-inner{padding:12px}}
+.hdr-logo{width:40px;height:40px;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.3);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.hdr-title{color:#fff}
+.hdr-title h1{font-size:16px;font-weight:700}
+.hdr-title p{font-size:11px;opacity:.75;margin-top:1px}
+.hdr-actions{margin-left:auto;display:flex;gap:8px}
+.hdr-btn{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.3);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;color:#fff;font-family:inherit;transition:all .15s;white-space:nowrap}
+.hdr-btn:hover{background:rgba(255,255,255,.3)}
+.hdr-btn.danger{background:rgba(239,68,68,.3);border-color:rgba(239,68,68,.5)}
+
+/* ─ Progress ─ */
+.prg{background:var(--white);border-bottom:2px solid var(--blue-soft);padding:12px 24px 10px;box-shadow:var(--sh)}
+@media(max-width:640px){.prg{padding:10px 12px 8px}}
+.prg-labels{display:flex;justify-content:space-between;margin-bottom:7px}
+.prg-lbl{font-size:10px;font-weight:700;color:var(--text-muted)}
+.prg-lbl.on{color:var(--blue)}.prg-lbl.ok{color:var(--green)}
+.prg-track{height:6px;background:var(--blue-soft);border-radius:3px;overflow:hidden}
+.prg-fill{height:100%;background:linear-gradient(90deg,#1d4ed8,#38bdf8);border-radius:3px;transition:width .4s}
+
+/* ─ Section ─ */
+.sec{padding:24px 0 0;animation:up .25s ease}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sec-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px;padding-bottom:9px;border-bottom:2px solid var(--blue-soft);display:flex;align-items:center;gap:8px}
+.sec-title::before{content:'';display:block;width:4px;height:14px;background:linear-gradient(180deg,#2563eb,#38bdf8);border-radius:2px}
+
+/* ─ Card ─ */
+.card{background:var(--white);border:2px solid var(--blue-soft);border-radius:var(--r);padding:20px;margin-bottom:16px;box-shadow:var(--sh)}
+.card:focus-within{box-shadow:var(--sh-md);border-color:var(--blue-mid)}
+.card-title{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+
+/* ─ Company grid ─ */
+.co-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}@media(max-width:1000px){.co-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:640px){.co-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.co-grid{grid-template-columns:repeat(2,1fr)}}
+.co-btn{background:var(--white);border:2.5px solid var(--blue-soft);border-radius:var(--r);padding:20px 12px 16px;cursor:pointer;text-align:center;transition:all .18s;color:var(--text);box-shadow:var(--sh)}
+.co-btn:hover{border-color:var(--blue);background:var(--blue-pale);transform:translateY(-2px)}
+.co-btn.sel{border-color:var(--blue);background:var(--blue-pale);box-shadow:0 0 0 4px rgba(37,99,235,.12);transform:translateY(-2px)}
+.co-icon{font-size:28px;display:block;margin-bottom:8px}
+.co-name{font-size:13px;font-weight:700}
+.co-sub{font-size:10px;color:var(--text-muted);margin-top:2px}
+.co-check{display:none;font-size:10px;font-weight:700;color:var(--blue);background:var(--blue-pale);border:1px solid var(--blue-mid);border-radius:8px;padding:2px 8px;margin-top:5px}
+.co-btn.sel .co-check{display:inline-block}
+
+/* ─ Form fields ─ */
+.field{margin-bottom:14px}.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:5px}
+.req{display:inline-block;font-size:10px;font-weight:700;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:4px;padding:1px 4px;margin-left:4px;vertical-align:middle}
+.field input,.field select,.field textarea{width:100%;padding:10px 13px;border:2px solid var(--blue-soft);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:15px;font-family:inherit;transition:all .15s;-webkit-appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.field input[type=number]{-moz-appearance:textfield}
+.field input::placeholder{color:var(--text-muted);opacity:.6}
+.field textarea{min-height:72px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.row4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+@media(max-width:640px){.row2{grid-template-columns:1fr}.row3{grid-template-columns:1fr 1fr}.row4{grid-template-columns:1fr 1fr}}
+
+/* ─ Odometer ─ */
+.odo-result{padding:10px 12px;border:2px solid var(--blue-mid);border-radius:var(--r-sm);background:var(--blue-pale);font-size:16px;font-weight:800;color:var(--blue);text-align:center;letter-spacing:-.01em}
+.odo-chain{display:flex;flex-direction:column;gap:0}
+.odo-step{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border:2px solid var(--blue-soft);border-radius:var(--r-sm);margin-bottom:6px;position:relative}
+.odo-step:last-child{margin-bottom:0}
+.odo-label{font-size:12px;font-weight:700;color:var(--blue);min-width:80px;flex-shrink:0}
+.odo-input{flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;background:var(--white);font-size:15px;font-family:inherit;color:var(--text)}
+.odo-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,.1)}
+.odo-unit{font-size:12px;color:var(--text-muted);flex-shrink:0}
+.odo-arrow{text-align:center;color:var(--blue-mid);font-size:16px;line-height:1;margin:2px 0;user-select:none}
+.odo-dist{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--blue-pale);border:2px solid var(--blue-mid);border-radius:var(--r-sm);margin-top:8px}
+.odo-dist-label{font-size:12px;font-weight:700;color:var(--blue);min-width:80px}
+.odo-dist-val{font-size:16px;font-weight:800;color:var(--blue)}
+
+/* ─ Destination cards ─ */
+.dest-list{display:flex;flex-direction:column;gap:14px}
+.dest-card{background:var(--bg);border:2px solid var(--blue-soft);border-radius:var(--r);padding:16px;padding-top:26px;position:relative;transition:border-color .15s}
+.dest-card:focus-within{border-color:var(--blue-mid);background:var(--white)}
+.dest-label{position:absolute;top:-12px;left:14px;background:linear-gradient(135deg,#1d4ed8,#38bdf8);color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:10px;box-shadow:0 2px 6px rgba(37,99,235,.3);letter-spacing:.04em}
+.dest-remove{position:absolute;top:9px;right:10px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:15px;padding:3px 7px;border-radius:5px;font-family:inherit;transition:all .12s}
+.dest-remove:hover{color:var(--red);background:var(--red-pale)}
+
+/* ─ Add button ─ */
+.btn-add{width:100%;padding:11px;border:2.5px dashed var(--blue-mid);border-radius:var(--r-sm);background:var(--blue-pale);cursor:pointer;color:var(--blue);font-size:14px;font-weight:700;font-family:inherit;margin-top:12px;transition:all .15s}
+.btn-add:hover{border-color:var(--blue);background:var(--blue-soft);transform:translateY(-1px)}
+
+/* ─ Navigation ─ */
+.nav{display:flex;gap:10px;padding:20px 0 0;margin-top:4px}
+.btn-back{flex:0 0 auto;padding:13px 20px;border:2px solid var(--blue-soft);border-radius:var(--r-sm);background:var(--white);cursor:pointer;color:var(--text-muted);font-size:14px;font-weight:600;font-family:inherit;transition:all .15s}
+.btn-back:hover{background:var(--bg);border-color:var(--blue-mid)}
+.btn-primary{flex:1;padding:13px;background:linear-gradient(135deg,#2563eb,#0ea5e9);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;font-size:15px;font-weight:700;font-family:inherit;transition:all .15s;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(37,99,235,.35)}
+.btn-primary:active{transform:scale(.98)}
+
+/* ─ Info badge ─ */
+.info-badge{display:inline-flex;align-items:center;gap:6px;background:var(--blue-pale);border:1.5px solid var(--blue-mid);color:var(--blue);font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;margin-bottom:16px}
+
+/* ─ Done screen ─ */
+.done{text-align:center;padding:48px 0 0}
+.done-icon{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#10b981,#34d399);margin:0 auto 18px;display:flex;align-items:center;justify-content:center;font-size:34px;color:#fff;box-shadow:0 8px 24px rgba(16,185,129,.35);animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.done h2{font-size:22px;font-weight:700;margin-bottom:6px}
+.done .sub{font-size:14px;color:var(--text-muted);margin-bottom:22px}
+.sum-box{background:var(--white);border:2px solid var(--blue-soft);border-radius:var(--r);padding:16px;margin:0 0 20px;text-align:left;box-shadow:var(--sh)}
+.sum-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:7px 0;border-bottom:1px solid var(--blue-soft)}
+.sum-row:last-child{border-bottom:none}
+.sum-k{color:var(--text-muted);font-weight:500}.sum-v{font-weight:700}
+
+/* ─── ADMIN STYLES ─── */
+.admin-login{max-width:420px;margin:80px auto;padding:0 20px}
+.admin-login .card{padding:32px}
+.admin-login h2{font-size:20px;font-weight:700;margin-bottom:6px;text-align:center}
+.admin-login p{font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:24px}
+.login-logo{width:56px;height:56px;background:linear-gradient(135deg,#2563eb,#0ea5e9);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px}
+.btn-login{width:100%;padding:13px;background:linear-gradient(135deg,#2563eb,#0ea5e9);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;font-size:15px;font-weight:700;font-family:inherit;transition:all .15s;box-shadow:0 4px 12px rgba(37,99,235,.3);margin-top:8px}
+.btn-login:hover{transform:translateY(-1px)}
+.login-err{color:var(--red);font-size:13px;text-align:center;margin-top:10px;display:none}
+
+/* Admin layout */
+.admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 68px);gap:0}
+@media(max-width:900px){.admin-layout{grid-template-columns:1fr}}
+.admin-sidebar{background:var(--white);border-right:2px solid var(--blue-soft);padding:20px 0}
+@media(max-width:900px){.admin-sidebar{display:none}}
+.sidebar-title{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);padding:0 16px 8px;border-bottom:1px solid var(--blue-soft);margin-bottom:8px}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-size:14px;font-weight:500;color:var(--text-muted);transition:all .12s;border-left:3px solid transparent}
+.sidebar-item:hover{background:var(--blue-pale);color:var(--blue)}
+.sidebar-item.on{background:var(--blue-pale);color:var(--blue);border-left-color:var(--blue);font-weight:700}
+.sidebar-item .ico{font-size:16px;width:20px;text-align:center}
+.admin-main{padding:24px;background:var(--bg)}
+@media(max-width:640px){.admin-main{padding:16px}}
+
+/* Admin tabs (mobile) */
+.admin-tabs{display:none;gap:4px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+@media(max-width:900px){.admin-tabs{display:flex}}
+.admin-tab{padding:8px 14px;background:var(--white);border:2px solid var(--blue-soft);border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .12s;color:var(--text-muted)}
+.admin-tab.on{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* Admin content panels */
+.admin-panel{display:none}.admin-panel.on{display:block}
+
+/* Stat cards */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.stats{grid-template-columns:1fr 1fr}}
+.stat-card{background:var(--white);border:2px solid var(--blue-soft);border-radius:var(--r);padding:16px;text-align:center;box-shadow:var(--sh)}
+.stat-label{font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:5px;letter-spacing:.04em}
+.stat-value{font-size:26px;font-weight:800;color:var(--blue);line-height:1}
+.stat-unit{font-size:12px;font-weight:500;color:var(--text-muted)}
+
+/* Report list */
+.report-list{display:flex;flex-direction:column;gap:10px}
+.report-item{background:var(--white);border:2px solid var(--blue-soft);border-radius:var(--r);padding:16px;box-shadow:var(--sh);cursor:pointer;transition:all .15s}
+.report-item:hover{border-color:var(--blue-mid);box-shadow:var(--sh-md)}
+.report-item.submitted .ri-status{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+.report-item.approved .ri-status{background:var(--green-pale);color:#065f46;border-color:#6ee7b7}
+.report-item.rejected .ri-status{background:var(--red-pale);color:#7f1d1d;border-color:#fca5a5}
+.ri-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ri-name{font-weight:700;font-size:15px}
+.ri-date{font-size:12px;color:var(--text-muted)}
+.ri-co{font-size:12px;font-weight:600;background:var(--blue-pale);color:var(--blue);padding:2px 8px;border-radius:8px}
+.ri-status{font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;border:1px solid;margin-left:auto}
+.ri-sub{font-size:12px;color:var(--text-muted);margin-top:5px}
+
+/* Detail panel */
+.detail-card{background:var(--white);border:2px solid var(--blue-soft);border-radius:var(--r);padding:20px;box-shadow:var(--sh);margin-bottom:16px}
+.detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--blue-soft);font-size:14px;gap:16px}
+.detail-row:last-child{border-bottom:none}
+.detail-k{color:var(--text-muted);font-weight:500;flex-shrink:0;width:130px}
+.detail-v{font-weight:600;text-align:right;word-break:break-word}
+
+/* Action buttons */
+.action-row{display:flex;gap:10px;flex-wrap:wrap}
+.btn-approve{padding:11px 22px;background:linear-gradient(135deg,#10b981,#34d399);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;transition:all .15s;box-shadow:0 3px 10px rgba(16,185,129,.3)}
+.btn-approve:hover{transform:translateY(-1px)}
+.btn-reject{padding:11px 22px;background:linear-gradient(135deg,#ef4444,#f87171);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;transition:all .15s}
+.btn-pdf{padding:11px 22px;background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;transition:all .15s;box-shadow:0 3px 10px rgba(124,58,237,.25)}
+.btn-back-list{padding:11px 18px;background:var(--white);border:2px solid var(--blue-soft);border-radius:var(--r-sm);cursor:pointer;font-size:14px;font-weight:600;color:var(--text-muted);font-family:inherit;transition:all .15s}
+.btn-back-list:hover{border-color:var(--blue-mid)}
+.btn-sm{padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;transition:all .12s}
+.btn-sm.edit{background:var(--blue-pale);color:var(--blue)}
+.btn-sm.del{background:var(--red-pale);color:var(--red)}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;background:var(--white);border:2px solid var(--blue-soft);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
+.filter-bar .field{margin:0;flex:1;min-width:140px}
+.filter-bar label{font-size:11px;margin-bottom:4px}
+.filter-bar input,.filter-bar select{padding:8px 10px;font-size:13px}
+
+/* Driver management */
+.driver-table{width:100%;border-collapse:collapse}
+.driver-table th,.driver-table td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--blue-soft);font-size:13px}
+.driver-table th{background:var(--blue-pale);color:var(--blue);font-weight:700;font-size:11px;letter-spacing:.05em}
+.driver-table tr:hover td{background:var(--bg)}
+
+/* Tags */
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px}
+.tag.pending{background:#fef3c7;color:#92400e}
+.tag.approved{background:var(--green-pale);color:#065f46}
+.tag.rejected{background:var(--red-pale);color:#7f1d1d}
+.tag.draft{background:#f1f5f9;color:#64748b}
+
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:var(--white);border-radius:var(--r);padding:28px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:16px}
+.modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+.btn-cancel{padding:10px 18px;background:var(--white);border:2px solid var(--blue-soft);border-radius:var(--r-sm);cursor:pointer;font-size:14px;font-family:inherit;color:var(--text-muted)}
+.btn-confirm{padding:10px 18px;background:var(--red);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;font-size:14px;font-weight:700;font-family:inherit}
+.btn-confirm.ok{background:var(--green)}
+
+/* Charts placeholder */
+.chart-placeholder{background:var(--bg);border:2px dashed var(--blue-mid);border-radius:var(--r);padding:40px;text-align:center;color:var(--text-muted);font-size:14px}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:var(--blue-mid);border-radius:3px}
+
+/* PDF print styles */
+@media print{
+  .hdr,.prg,.nav,.btn-add,.admin-sidebar,.admin-tabs,.action-row,.filter-bar{display:none!important}
+  .page,.admin-layout,.admin-main{display:block!important}
+  .card,.detail-card{box-shadow:none!important;border:1px solid #ccc!important}
+  body{background:white!important;font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- ════ DRIVER PAGE ════ -->
+<div class="page active" id="page-driver">
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-logo">🚚</div>
+    <div class="hdr-title">
+      <h1>運行日報 電子入力システム</h1>
+      <p>正光運輸株式会社</p>
+    </div>
+    <div class="hdr-actions">
+      <button class="hdr-btn" onclick="gotoAdmin()">⚙ 管理者</button>
+    </div>
+  </div>
+</div>
+
+<div class="prg" id="prgBar">
+  <div class="prg-labels" id="prgLabels"></div>
+  <div class="prg-track"><div class="prg-fill" id="prgFill"></div></div>
+</div>
+
+<div class="wrap">
+
+<!-- STEP 0: Company -->
+<div class="sec" id="s0" style="display:block">
+  <div class="sec-title">元請け会社を選択してください</div>
+  <div class="co-grid" id="coGrid"></div>
+  <div class="nav"><button class="btn-primary" onclick="selectCo()">次へ進む →</button></div>
+</div>
+
+<!-- STEP 1: Basic info -->
+<div class="sec" id="s1" style="display:none">
+  <div class="sec-title">基本情報の入力</div>
+  <div id="s1content"></div>
+  <div class="nav">
+    <button class="btn-back" onclick="goStep(0)">← 戻る</button>
+    <button class="btn-primary" onclick="goStep(2)">次へ →</button>
+  </div>
+</div>
+
+<!-- STEP 2: Work records -->
+<div class="sec" id="s2" style="display:none">
+  <div class="sec-title">作業記録</div>
+  <div id="s2content"></div>
+  <div class="nav">
+    <button class="btn-back" onclick="goStep(1)">← 戻る</button>
+    <button class="btn-primary" onclick="goStep(3)">次へ →</button>
+  </div>
+</div>
+
+<!-- STEP 3: Expenses -->
+<div class="sec" id="s3" style="display:none">
+  <div class="sec-title">費用・備考の入力</div>
+  <div id="s3content"></div>
+  <div class="nav">
+    <button class="btn-back" onclick="goStep(2)">← 戻る</button>
+    <button class="btn-primary" onclick="submitReport()">📩 日報を送信する</button>
+  </div>
+</div>
+
+<!-- STEP 4: Done -->
+<div class="sec" id="s4" style="display:none">
+  <div class="done">
+    <div class="done-icon">✓</div>
+    <h2>送信完了！</h2>
+    <p class="sub">日報が送信されました。管理者の承認をお待ちください。</p>
+    <div class="sum-box" id="sumBox"></div>
+    <button class="btn-primary" style="max-width:280px;margin:0 auto 0;display:block" onclick="resetDriver()">新しい日報を作成する</button>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+</div><!-- /page-driver -->
+
+<!-- ════ ADMIN LOGIN ════ -->
+<div class="page" id="page-login">
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-logo">🚚</div>
+    <div class="hdr-title"><h1>運行日報 管理者ログイン</h1><p>正光運輸株式会社</p></div>
+    <div class="hdr-actions"><button class="hdr-btn" onclick="showPage('page-driver')">← 入力画面</button></div>
+  </div>
+</div>
+<div class="admin-login">
+  <div class="card">
+    <div class="login-logo">⚙</div>
+    <h2>管理者ログイン</h2>
+    <p>管理者ID・パスワードを入力してください</p>
+    <div class="field"><label>管理者ID</label><input type="text" id="loginId" placeholder="admin" value="admin"></div>
+    <div class="field"><label>パスワード</label><input type="password" id="loginPw" placeholder="••••••" value="1234" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn-login" onclick="doLogin()">ログイン</button>
+    <div class="login-err" id="loginErr">IDまたはパスワードが違います</div>
+    <div style="margin-top:12px;font-size:11px;color:var(--text-muted);text-align:center">デモ用 ID: admin ／ PW: 1234</div>
+  </div>
+</div>
+</div>
+
+<!-- ════ ADMIN DASHBOARD ════ -->
+<div class="page" id="page-admin">
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-logo">⚙</div>
+    <div class="hdr-title"><h1>管理者ダッシュボード</h1><p>正光運輸株式会社</p></div>
+    <div class="hdr-actions">
+      <button class="hdr-btn" onclick="showPage('page-driver')">← 入力画面</button>
+      <button class="hdr-btn danger" onclick="adminLogout()">ログアウト</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile tabs -->
+<div class="wrap">
+<div class="admin-tabs" id="adminTabs"></div>
+</div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <div class="admin-sidebar">
+    <div class="sidebar-title">MENU</div>
+    <div class="sidebar-item on" data-panel="dash" onclick="switchPanel('dash')"><span class="ico">📊</span>ダッシュボード</div>
+    <div class="sidebar-item" data-panel="approval" onclick="switchPanel('approval')"><span class="ico">✅</span>承認管理 <span id="badge-approval" style="margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px"></span></div>
+    <div class="sidebar-item" data-panel="records" onclick="switchPanel('records')"><span class="ico">📋</span>配送記録</div>
+    <div class="sidebar-item" data-panel="drivers" onclick="switchPanel('drivers')"><span class="ico">👤</span>乗務員管理</div>
+    <div class="sidebar-title" style="margin-top:16px">REPORT</div>
+    <div class="sidebar-item" data-panel="kpi" onclick="switchPanel('kpi')"><span class="ico">📈</span>省力化KPI</div>
+  </div>
+
+  <!-- Main -->
+  <div class="admin-main">
+
+    <!-- Dashboard -->
+    <div class="admin-panel on" id="panel-dash">
+      <div class="sec-title">ダッシュボード</div>
+      <div class="stats" id="dashStats"></div>
+      <div class="card">
+        <div class="card-title">📋 最新の日報（承認待ち優先）</div>
+        <div id="dashRecent"></div>
+      </div>
+    </div>
+
+    <!-- Approval -->
+    <div class="admin-panel" id="panel-approval">
+      <div id="approvalList"></div>
+      <div id="approvalDetail" style="display:none"></div>
+    </div>
+
+    <!-- Records -->
+    <div class="admin-panel" id="panel-records">
+      <div class="sec-title">配送記録</div>
+      <div class="filter-bar">
+        <div class="field"><label>乗務員</label><select id="f-driver-filter"><option value="">全員</option></select></div>
+        <div class="field"><label>期間</label><select id="f-period-filter">
+          <option value="day">日次</option><option value="month" selected>月次</option><option value="year">年次</option>
+        </select></div>
+        <div class="field"><label>日付</label><input type="month" id="f-date-filter"></div>
+        <div class="field"><label>元請け</label><select id="f-co-filter"><option value="">全社</option></select></div>
+      </div>
+      <div id="recordsSummary" class="card" style="margin-bottom:16px"></div>
+      <div id="recordsList"></div>
+    </div>
+
+    <!-- Drivers -->
+    <div class="admin-panel" id="panel-drivers">
+      <div class="sec-title">乗務員管理</div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">➕ 乗務員の追加</div>
+        <div class="row3">
+          <div class="field"><label>氏名 <span class="req">必須</span></label><input type="text" id="new-drv-name" placeholder="例：田中 太郎"></div>
+          <div class="field"><label>社員番号</label><input type="text" id="new-drv-id" placeholder="例：D001"></div>
+          <div class="field"><label>担当車両</label><input type="text" id="new-drv-veh" placeholder="例：江東100あ887"></div>
+        </div>
+        <button class="btn-primary" style="width:auto;padding:10px 24px;margin-top:4px" onclick="addDriver()">追加する</button>
+      </div>
+      <div class="card">
+        <div class="card-title">👤 乗務員一覧</div>
+        <div id="driverTable"></div>
+      </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="admin-panel" id="panel-kpi">
+      <div class="sec-title">省力化効果 KPIレポート（補助金効果報告用）</div>
+      <div id="kpiContent"></div>
+    </div>
+
+  </div>
+</div>
+</div><!-- /page-admin -->
+
+<!-- Reject modal -->
+<div class="modal-bg" id="rejectModal">
+  <div class="modal">
+    <h3>📝 差し戻しコメント</h3>
+    <div class="field"><label>差し戻し理由・修正依頼内容</label><textarea id="rejectComment" placeholder="例：メーター値が前日と一致していません。ご確認ください。" style="min-height:100px"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('rejectModal')">キャンセル</button>
+      <button class="btn-confirm" onclick="confirmReject()">差し戻す</button>
+    </div>
+  </div>
+</div>
+
+<!-- Driver delete modal -->
+<div class="modal-bg" id="deleteModal">
+  <div class="modal">
+    <h3>🗑 乗務員を削除しますか？</h3>
+    <p style="font-size:14px;color:var(--text-muted);margin-bottom:4px">過去の日報データは保持されます。</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('deleteModal')">キャンセル</button>
+      <button class="btn-confirm" onclick="confirmDeleteDriver()">削除する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  DATA STORE
+// ═══════════════════════════════════════
+const COMPANIES = [
+  {id:'nittsu',name:'日本通運',sub:'NX 協力会社',icon:'🔵'},
+  {id:'seiko',name:'正光運輸',sub:'Seiko Transport',icon:'🟢'},
+  {id:'isis',name:'イシスネット',sub:'Isis Networks(株)',icon:'🟠'},
+  {id:'johoku',name:'城北陸運',sub:'運転作業日報',icon:'🚛'},
+  {id:'meitetsu',name:'名鉄運輸',sub:'集貨上番業務日報',icon:'🔷'},
+  {id:'musashi',name:'武蔵貨物',sub:'業務日報',icon:'🟤'},
+];
+const STEPS = ['会社選択','基本情報','作業記録','費用・備考','完了'];
+
+let appState = {
+  step: 0,
+  selectedCo: null,
+  destinations: [{label:'A', name:'', area:'', time:'', odo:'', items:'', client:'', count:'', from:''}],
+  reports: JSON.parse(localStorage.getItem('drs_reports')||'[]'),
+  drivers: JSON.parse(localStorage.getItem('drs_drivers')||JSON.stringify([
+    {id:'D001',name:'田中 太郎',vehicle:'江東100あ887',active:true},
+    {id:'D002',name:'佐藤 次郎',vehicle:'江東100い234',active:true},
+    {id:'D003',name:'鈴木 三郎',vehicle:'江東100う567',active:true},
+  ])),
+  adminLoggedIn: false,
+  currentPanel: 'dash',
+  rejectTargetId: null,
+  deleteDriverId: null,
+};
+
+function save() {
+  localStorage.setItem('drs_reports', JSON.stringify(appState.reports));
+  localStorage.setItem('drs_drivers', JSON.stringify(appState.drivers));
+}
+
+// ═══════════════════════════════════════
+//  PAGE ROUTING
+// ═══════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function gotoAdmin() {
+  if (appState.adminLoggedIn) { showPage('page-admin'); renderAdmin(); }
+  else showPage('page-login');
+}
+
+function doLogin() {
+  const id = document.getElementById('loginId').value;
+  const pw = document.getElementById('loginPw').value;
+  if (id==='admin' && pw==='1234') {
+    appState.adminLoggedIn = true;
+    document.getElementById('loginErr').style.display = 'none';
+    showPage('page-admin');
+    renderAdmin();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+
+function adminLogout() {
+  appState.adminLoggedIn = false;
+  showPage('page-login');
+}
+
+// ═══════════════════════════════════════
+//  DRIVER FLOW
+// ═══════════════════════════════════════
+function initDriver() {
+  const grid = document.getElementById('coGrid');
+  grid.innerHTML = COMPANIES.map(c=>`
+    <button class="co-btn" id="co_${c.id}" onclick="pickCo('${c.id}')">
+      <span class="co-icon">${c.icon}</span>
+      <span class="co-name">${c.name}</span>
+      <span class="co-sub">${c.sub}</span>
+      <span class="co-check">✓ 選択中</span>
+    </button>`).join('');
+  renderProgress();
+}
+
+function pickCo(id) {
+  appState.selectedCo = id;
+  document.querySelectorAll('.co-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('co_'+id).classList.add('sel');
+}
+
+function selectCo() {
+  if (!appState.selectedCo) { alert('元請け会社を選択してください'); return; }
+  buildForms();
+  goStep(1);
+}
+
+function renderProgress() {
+  const cur = appState.step;
+  document.getElementById('prgLabels').innerHTML =
+    STEPS.map((s,i)=>`<span class="prg-lbl ${i===cur?'on':i<cur?'ok':''}">${i<cur?'✓ ':''}${s}</span>`).join('');
+  document.getElementById('prgFill').style.width = (cur/(STEPS.length-1)*100)+'%';
+}
+
+function goStep(n) {
+  for(let i=0;i<5;i++) document.getElementById('s'+i).style.display = 'none';
+  document.getElementById('s'+n).style.display = 'block';
+  appState.step = n;
+  renderProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function resetDriver() {
+  appState.step=0; appState.selectedCo=null;
+  appState.destinations=[{label:'A',name:'',area:'',time:'',odo:'',items:'',client:'',count:'',from:''}];
+  document.querySelectorAll('.co-btn').forEach(b=>b.classList.remove('sel'));
+  goStep(0);
+}
+
+// ─── Build forms ───
+const today = () => new Date().toISOString().slice(0,10);
+const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+function buildForms() { buildS1(); buildS2(); buildS3(); }
+
+// ── Step 1: Basic Info ──
+function buildS1() {
+  const co = COMPANIES.find(x=>x.id===appState.selectedCo);
+  const activeDrivers = appState.drivers.filter(d=>d.active);
+  const driverOpts = activeDrivers.map(d=>`<option value="${d.id}" data-veh="${d.vehicle}">${d.name}</option>`).join('');
+
+  let html = `<div class="info-badge">${co.icon} ${co.name} の日報を作成中</div>`;
+
+  html += `<div class="card">
+    <div class="card-title">👤 乗務員・車両情報</div>
+    <div class="row2">
+      <div class="field"><label>乗務員名 <span class="req">必須</span></label>
+        <select id="f_drv" onchange="onDriverChange(this)">
+          <option value="">選択してください</option>${driverOpts}
+        </select></div>
+      <div class="field"><label>作業日 <span class="req">必須</span></label>
+        <input type="date" id="f_date" value="${today()}"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>車両番号 <span class="req">必須</span></label>
+        <input type="text" id="f_veh" placeholder="例：江東100あ887"></div>
+      <div class="field"><label>車種</label>
+        <select id="f_vt">
+          <option value="">選択してください</option>
+          <option>2t車</option><option>4t車（平ボディ）</option>
+          <option>4t車（ウイング）</option><option>大型車</option>
+          <option>ゲート付き</option><option>その他</option>
+        </select></div>
+    </div>
+  </div>`;
+
+  // Odometer chain
+  html += buildOdoSection();
+
+  // Time
+  const dep='07:00', arr='15:00';
+  html += `<div class="card">
+    <div class="card-title">🕐 作業時刻</div>
+    <div class="row2">
+      <div class="field"><label>作業開始時刻</label><input type="time" id="f_dep" value="${dep}"></div>
+      <div class="field"><label>作業終了時刻</label><input type="time" id="f_arr" value="${arr}"></div>
+    </div>
+  </div>`;
+
+  // Company-specific
+  if (appState.selectedCo==='nittsu') {
+    html += `<div class="card"><div class="card-title">📋 管理情報</div>
+      <div class="row3">
+        <div class="field"><label>管理課所コード</label><input type="text" id="f_dcode" placeholder="486"></div>
+        <div class="field"><label>請負階層</label><select id="f_tier"><option value="1">1次</option><option value="2">2次</option><option value="3">3次</option></select></div>
+        <div class="field"><label>上乗手①</label><input type="text" id="f_sub1" placeholder="氏名（任意）"></div>
+      </div></div>`;
+  }
+  if (appState.selectedCo==='seiko') {
+    html += `<div class="card"><div class="card-title">🚛 車両・商品情報</div>
+      <div class="row3">
+        <div class="field"><label>要請トン数</label><input type="number" id="f_rt" placeholder="2"></div>
+        <div class="field"><label>標記トン数</label><input type="number" id="f_st" placeholder="3"></div>
+        <div class="field"><label>商品コード</label><input type="text" id="f_pc" placeholder="330"></div>
+      </div></div>`;
+  }
+  if (appState.selectedCo==='johoku') {
+    html += `<div class="card"><div class="card-title">🚛 城北陸運 追加情報</div>
+      <div class="row2">
+        <div class="field"><label>出庫キロ（km）</label><input type="number" id="f_odo_dep_base" placeholder="例：127390"></div>
+        <div class="field"><label>帰庫キロ（km）</label><input type="number" id="f_odo_arr_base" placeholder="例：127460"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label>首都高速（円）</label><input type="number" id="f_metropolitan" placeholder="0"></div>
+        <div class="field"><label>高速道路（円）</label><input type="number" id="f_highway" placeholder="0"></div>
+        <div class="field"><label>全走行キロ（km）</label><input type="number" id="f_total_km_j" placeholder="0"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>出庫時間</label><input type="time" id="f_dep_base"></div>
+        <div class="field"><label>帰庫時間</label><input type="time" id="f_arr_base"></div>
+      </div></div>`;
+  }
+  if (appState.selectedCo==='meitetsu') {
+    html += `<div class="card"><div class="card-title">🔷 名鉄運輸 追加情報</div>
+      <div class="row2">
+        <div class="field"><label>集荷数量</label><input type="number" id="f_pickup_qty" placeholder="0"></div>
+        <div class="field"><label>集配数量</label><input type="number" id="f_delivery_qty" placeholder="0"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>実キロ（km）</label><input type="number" id="f_real_km" placeholder="0"></div>
+        <div class="field"><label>最遠距離（km）</label><input type="number" id="f_max_km" placeholder="0"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>ガソリン（L）</label><input type="number" id="f_gas_meitetsu" step="0.1" placeholder="0.0"></div>
+        <div class="field"><label>報償費（円）</label><input type="number" id="f_reward" placeholder="0"></div>
+      </div></div>`;
+  }
+  if (appState.selectedCo==='musashi') {
+    html += `<div class="card"><div class="card-title">🟤 武蔵貨物 追加情報</div>
+      <div class="row2">
+        <div class="field"><label>出発地</label><input type="text" id="f_from_m" placeholder="例：江東区"></div>
+        <div class="field"><label>到着地</label><input type="text" id="f_to_m" placeholder="例：品川区"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>品名</label><input type="text" id="f_item_m" placeholder="例：食品"></div>
+        <div class="field"><label>数量</label><input type="number" id="f_qty_m" placeholder="0"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>出発メーター（km）</label><input type="number" id="f_odo_dep_m" placeholder="0" oninput="calcDist()"></div>
+        <div class="field"><label>到着メーター（km）</label><input type="number" id="f_odo_arr_m" placeholder="0" oninput="calcDist()"></div>
+      </div></div>`;
+  }
+
+  document.getElementById('s1content').innerHTML = html;
+}
+
+function onDriverChange(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  const veh = opt.dataset.veh || '';
+  document.getElementById('f_veh').value = veh;
+}
+
+function buildOdoSection() {
+  const dests = appState.destinations;
+  let html = `<div class="card"><div class="card-title">🔢 走行メーター（順次入力）</div>
+    <div class="odo-chain" id="odoChain">
+      <div class="odo-step">
+        <span class="odo-label">🏢 出発</span>
+        <input class="odo-input" type="number" id="odo_start" placeholder="例：127390" oninput="calcAllDist()" inputmode="numeric">
+        <span class="odo-unit">km</span>
+      </div>`;
+
+  dests.forEach((d,i) => {
+    html += `<div class="odo-arrow">↓</div>
+      <div class="odo-step" id="odo_dest_row_${i}">
+        <span class="odo-label">📍 配送先 ${d.label}</span>
+        <input class="odo-input" type="number" id="odo_dest_${i}" placeholder="到着時メーター" oninput="calcAllDist()" inputmode="numeric">
+        <span class="odo-unit">km</span>
+      </div>`;
+  });
+
+  html += `<div class="odo-arrow">↓</div>
+      <div class="odo-step">
+        <span class="odo-label">🏁 終了</span>
+        <input class="odo-input" type="number" id="odo_end" placeholder="例：127460" oninput="calcAllDist()" inputmode="numeric">
+        <span class="odo-unit">km</span>
+      </div>
+      <div class="odo-dist">
+        <span class="odo-dist-label">📏 走行距離</span>
+        <span class="odo-dist-val" id="odo_total">— km</span>
+      </div>
+    </div>
+    <button class="btn-add" onclick="addDestination()">＋ 配送先を追加する</button>
+  </div>`;
+  return html;
+}
+
+function calcAllDist() {
+  const s = parseFloat(document.getElementById('odo_start')?.value)||0;
+  const e = parseFloat(document.getElementById('odo_end')?.value)||0;
+  const el = document.getElementById('odo_total');
+  if (el) el.textContent = (e>s) ? (e-s)+' km' : '— km';
+}
+
+function addDestination() {
+  // Save current odo values
+  saveOdoValues();
+  const n = appState.destinations.length;
+  if (n >= 26) { alert('配送先は最大26件です'); return; }
+  appState.destinations.push({label:ALPHA[n],name:'',area:'',time:'',odo:'',items:'',client:'',count:'',from:''});
+  buildS1(); buildS2();
+  // Scroll to odo chain
+  setTimeout(()=>{
+    document.getElementById('odo_end')?.scrollIntoView({behavior:'smooth',block:'center'});
+  },100);
+}
+
+function saveOdoValues() {
+  // Persist odo input values before rebuilding
+  appState._odo_start = document.getElementById('odo_start')?.value || '';
+  appState.destinations.forEach((d,i) => {
+    d.odo = document.getElementById('odo_dest_'+i)?.value || '';
+  });
+  appState._odo_end = document.getElementById('odo_end')?.value || '';
+}
+
+function restoreOdoValues() {
+  if (appState._odo_start) { const el=document.getElementById('odo_start'); if(el) el.value=appState._odo_start; }
+  if (appState._odo_end)   { const el=document.getElementById('odo_end');   if(el) el.value=appState._odo_end; }
+  appState.destinations.forEach((d,i) => {
+    if (d.odo) { const el=document.getElementById('odo_dest_'+i); if(el) el.value=d.odo; }
+  });
+  calcAllDist();
+}
+
+// ── Step 2: Work records ──
+function buildS2() {
+  const co = appState.selectedCo;
+  let html = `<div class="dest-list">`;
+
+  appState.destinations.forEach((d, i) => {
+    const rmBtn = i > 0 ? `<button class="dest-remove" onclick="removeDest(${i})">✕</button>` : '';
+    html += `<div class="dest-card"><span class="dest-label">配送先 ${d.label}</span>${rmBtn}`;
+
+    if (co==='nittsu') {
+      html += `
+        <div class="row2">
+          <div class="field"><label>発地</label>
+            <input type="text" data-di="${i}" data-dk="from" value="${d.from||''}" placeholder="例：C-NEX 江東" oninput="updDest(this)"></div>
+          <div class="field"><label>着地</label>
+            <input type="text" data-di="${i}" data-dk="name" value="${d.name||''}" placeholder="例：江東" oninput="updDest(this)"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>荷主名・品名</label>
+            <input type="text" data-di="${i}" data-dk="client" value="${d.client||''}" placeholder="例：2ABNK 349" oninput="updDest(this)"></div>
+          <div class="field"><label>件数</label>
+            <input type="number" data-di="${i}" data-dk="count" value="${d.count||''}" placeholder="1" oninput="updDest(this)" inputmode="numeric"></div>
+        </div>
+        <div class="field"><label>着時刻</label>
+          <input type="time" data-di="${i}" data-dk="time" value="${d.time||''}" oninput="updDest(this)"></div>`;
+    } else if (co==='seiko') {
+      html += `
+        <div class="row2">
+          <div class="field"><label>発地</label>
+            <input type="text" data-di="${i}" data-dk="from" value="${d.from||''}" placeholder="発地" oninput="updDest(this)"></div>
+          <div class="field"><label>着地</label>
+            <input type="text" data-di="${i}" data-dk="name" value="${d.name||''}" placeholder="着地" oninput="updDest(this)"></div>
+        </div>
+        <div class="field"><label>着時刻</label>
+          <input type="time" data-di="${i}" data-dk="time" value="${d.time||''}" oninput="updDest(this)"></div>`;
+    } else if (co==='johoku') {
+      html += `
+        <div class="row2">
+          <div class="field"><label>積地</label>
+            <input type="text" data-di="${i}" data-dk="from" value="${d.from||''}" placeholder="例：江東区倉庫" oninput="updDest(this)"></div>
+          <div class="field"><label>卸地</label>
+            <input type="text" data-di="${i}" data-dk="name" value="${d.name||''}" placeholder="例：品川区" oninput="updDest(this)"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>積載物</label>
+            <input type="text" data-di="${i}" data-dk="items" value="${d.items||''}" placeholder="例：食品" oninput="updDest(this)"></div>
+          <div class="field"><label>着時間</label>
+            <input type="time" data-di="${i}" data-dk="time" value="${d.time||''}" oninput="updDest(this)"></div>
+        </div>`;
+    } else if (co==='meitetsu') {
+      html += `
+        <div class="row2">
+          <div class="field"><label>発着時刻</label>
+            <input type="time" data-di="${i}" data-dk="time" value="${d.time||''}" oninput="updDest(this)"></div>
+          <div class="field"><label>荷主名・内容</label>
+            <input type="text" data-di="${i}" data-dk="items" value="${d.items||d.client||''}" placeholder="荷主名" oninput="updDest(this)"></div>
+        </div>`;
+    } else if (co==='musashi') {
+      html += `
+        <div class="row2">
+          <div class="field"><label>荷主名</label>
+            <input type="text" data-di="${i}" data-dk="name" value="${d.name||''}" placeholder="荷主名" oninput="updDest(this)"></div>
+          <div class="field"><label>荷物内容</label>
+            <input type="text" data-di="${i}" data-dk="items" value="${d.items||''}" placeholder="例：食品" oninput="updDest(this)"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>積載数</label>
+            <input type="number" data-di="${i}" data-dk="count" value="${d.count||''}" placeholder="0" oninput="updDest(this)" inputmode="numeric"></div>
+          <div class="field"><label>着時刻</label>
+            <input type="time" data-di="${i}" data-dk="time" value="${d.time||''}" oninput="updDest(this)"></div>
+        </div>`;
+    } else { // isis
+      html += `
+        <div class="row2">
+          <div class="field"><label>着地</label>
+            <input type="text" data-di="${i}" data-dk="name" value="${d.name||''}" placeholder="例：クロスカルチャーセンター" oninput="updDest(this)"></div>
+          <div class="field"><label>着時刻</label>
+            <input type="time" data-di="${i}" data-dk="time" value="${d.time||''}" oninput="updDest(this)"></div>
+        </div>
+        <div class="field"><label>備考</label>
+          <input type="text" data-di="${i}" data-dk="items" value="${d.items||''}" placeholder="メモ" oninput="updDest(this)"></div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  html += `</div>`;
+  document.getElementById('s2content').innerHTML = html;
+}
+
+function updDest(el) {
+  appState.destinations[+el.dataset.di][el.dataset.dk] = el.value;
+}
+
+function removeDest(i) {
+  saveOdoValues();
+  appState.destinations.splice(i,1);
+  // Re-label
+  appState.destinations.forEach((d,idx)=>{ d.label=ALPHA[idx]; });
+  buildS1(); buildS2();
+  restoreOdoValues();
+}
+
+// ── Step 3: Expenses ──
+function buildS3() {
+  const co = appState.selectedCo;
+  let extra = '';
+  if (co==='seiko'||co==='nittsu') {
+    extra = `<div class="row2">
+      <div class="field"><label>基本料金（円）</label><input type="number" id="f_base" placeholder="0" inputmode="numeric"></div>
+      <div class="field"><label>待機料（円）</label><input type="number" id="f_wait" placeholder="0" inputmode="numeric"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>時間割増（円）</label><input type="number" id="f_ot" placeholder="0" inputmode="numeric"></div>
+      <div class="field"><label>助手料金（円）</label><input type="number" id="f_hlp" placeholder="0" inputmode="numeric"></div>
+    </div>`;
+  }
+  document.getElementById('s3content').innerHTML = `
+    <div class="card">
+      <div class="card-title">💴 費用</div>
+      <div class="row3">
+        <div class="field"><label>有料道路代（円）</label><input type="number" id="f_toll" placeholder="0" inputmode="numeric"></div>
+        <div class="field"><label>駐車料金（円）</label><input type="number" id="f_park" placeholder="0" inputmode="numeric"></div>
+        <div class="field"><label>ガソリン代（円）</label><input type="number" id="f_gas" placeholder="0" inputmode="numeric"></div>
+      </div>
+      <div class="row2" style="margin-top:4px">
+        <div class="field"><label>給油量（L）</label><input type="number" id="f_gas_l" placeholder="0.0" step="0.1" inputmode="decimal"></div>
+      </div>
+      ${extra}
+    </div>
+    <div class="card">
+      <div class="card-title">📝 報告・特記事項</div>
+      <div class="field"><label>事故・違反・クレーム等（なければ空白）</label>
+        <textarea id="f_inc" placeholder="特記事項があれば記入してください"></textarea></div>
+      <div class="field"><label>その他備考</label>
+        <textarea id="f_note" placeholder="例：荷物の状態、遅延理由等"></textarea></div>
+    </div>`;
+}
+
+// ── Submit ──
+function submitReport() {
+  const drvSel = document.getElementById('f_drv');
+  const drvId  = drvSel?.value;
+  const drvName = drvSel?.options[drvSel.selectedIndex]?.text || '';
+  const dt = document.getElementById('f_date')?.value;
+  if (!drvId) { alert('乗務員を選択してください'); goStep(1); return; }
+  if (!dt)    { alert('作業日を選択してください'); goStep(1); return; }
+
+  const co = COMPANIES.find(x=>x.id===appState.selectedCo);
+  const os = parseFloat(document.getElementById('odo_start')?.value)||0;
+  const oe = parseFloat(document.getElementById('odo_end')?.value)||0;
+
+  const destOdos = appState.destinations.map((_,i)=>parseFloat(document.getElementById('odo_dest_'+i)?.value)||0);
+
+  const report = {
+    id: 'R'+Date.now(),
+    company: co.name, companyId: co.id,
+    driverId: drvId, driverName: drvName,
+    date: dt,
+    vehicle: document.getElementById('f_veh')?.value||'',
+    vtype: document.getElementById('f_vt')?.value||'',
+    odo_start: os, odo_end: oe,
+    distance: oe>os ? oe-os : 0,
+    dep: document.getElementById('f_dep')?.value||'',
+    arr: document.getElementById('f_arr')?.value||'',
+    destinations: appState.destinations.map((d,i)=>({...d, odo: destOdos[i]})),
+    toll: parseInt(document.getElementById('f_toll')?.value)||0,
+    parking: parseInt(document.getElementById('f_park')?.value)||0,
+    gas_fee: parseInt(document.getElementById('f_gas')?.value)||0,
+    gas_vol: parseFloat(document.getElementById('f_gas_l')?.value)||0,
+    incident: document.getElementById('f_inc')?.value||'',
+    notes: document.getElementById('f_note')?.value||'',
+    status: 'submitted',
+    submitted_at: new Date().toISOString(),
+    approved_at: null, approved_by: null, reject_comment: null,
+    input_minutes: 5, // record actual input time (PoC: fixed)
+  };
+  appState.reports.push(report);
+  save();
+
+  // Summary
+  document.getElementById('sumBox').innerHTML = [
+    ['元請け会社', co.icon+' '+co.name],
+    ['乗務員', drvName], ['作業日', dt],
+    ['車両番号', report.vehicle||'—'],
+    ['走行距離', report.distance ? report.distance+' km' : '—'],
+    ['配送件数', appState.destinations.length+' 件'],
+    ['有料道路代', report.toll.toLocaleString()+' 円'],
+    ['ガソリン代', report.gas_fee.toLocaleString()+' 円'],
+    ['提出日時', new Date().toLocaleString('ja-JP')],
+  ].map(([k,v])=>`<div class="sum-row"><span class="sum-k">${k}</span><span class="sum-v">${v}</span></div>`).join('');
+
+  goStep(4);
+  // Reset destinations for next use
+  appState.destinations = [{label:'A',name:'',area:'',time:'',odo:'',items:'',client:'',count:'',from:''}];
+}
+
+// ═══════════════════════════════════════
+//  ADMIN
+// ═══════════════════════════════════════
+function renderAdmin() {
+  updateBadge();
+  renderDash();
+  renderDriverPanel();
+  renderApprovalList();
+  renderRecords();
+  renderKpi();
+  initAdminTabs();
+  // Set default date filter
+  const now = new Date();
+  const m = now.toISOString().slice(0,7);
+  const el = document.getElementById('f-date-filter');
+  if (el) el.value = m;
+  // Populate driver filter
+  populateDriverFilter();
+  populateCoFilter();
+}
+
+function updateBadge() {
+  const pending = appState.reports.filter(r=>r.status==='submitted').length;
+  const b = document.getElementById('badge-approval');
+  if (b) b.textContent = pending > 0 ? pending : '';
+}
+
+function initAdminTabs() {
+  const panels = ['dash','approval','records','drivers','kpi'];
+  const labels = ['📊 ダッシュ','✅ 承認','📋 記録','👤 乗務員','📈 KPI'];
+  const tabs = document.getElementById('adminTabs');
+  if (!tabs) return;
+  tabs.innerHTML = panels.map((p,i)=>`
+    <button class="admin-tab ${p===appState.currentPanel?'on':''}" onclick="switchPanel('${p}')">${labels[i]}</button>`).join('');
+}
+
+function switchPanel(id) {
+  appState.currentPanel = id;
+  document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById('panel-'+id).classList.add('on');
+  document.querySelectorAll('.sidebar-item').forEach(el=>{
+    el.classList.toggle('on', el.dataset.panel===id);
+  });
+  document.querySelectorAll('.admin-tab').forEach(el=>{
+    el.classList.toggle('on', el.onclick.toString().includes("'"+id+"'"));
+  });
+  updateBadge();
+  initAdminTabs();
+}
+
+// Dashboard
+function renderDash() {
+  const reports = appState.reports;
+  const pending = reports.filter(r=>r.status==='submitted').length;
+  const approved = reports.filter(r=>r.status==='approved').length;
+  const totalDist = reports.reduce((a,r)=>a+(r.distance||0),0);
+  const totalGas = reports.reduce((a,r)=>a+(r.gas_fee||0),0);
+
+  document.getElementById('dashStats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">総日報件数</div><div class="stat-value">${reports.length}</div></div>
+    <div class="stat-card"><div class="stat-label">承認待ち</div><div class="stat-value" style="color:var(--amber)">${pending}</div></div>
+    <div class="stat-card"><div class="stat-label">総走行距離</div><div class="stat-value">${totalDist.toLocaleString()}</div><div class="stat-unit">km</div></div>
+    <div class="stat-card"><div class="stat-label">ガソリン代合計</div><div class="stat-value">${Math.round(totalGas/1000)}</div><div class="stat-unit">千円</div></div>`;
+
+  const recent = [...reports].sort((a,b)=>new Date(b.submitted_at)-new Date(a.submitted_at)).slice(0,5);
+  document.getElementById('dashRecent').innerHTML = recent.length
+    ? recent.map(r=>reportItemHTML(r)).join('')
+    : '<div style="text-align:center;padding:32px;color:var(--text-muted)">日報データがありません</div>';
+}
+
+function reportItemHTML(r) {
+  const statusLabel = {submitted:'承認待ち',approved:'承認済み',rejected:'差し戻し',draft:'下書き'}[r.status]||r.status;
+  return `<div class="report-item ${r.status}" onclick="openDetail('${r.id}')">
+    <div class="ri-top">
+      <span class="ri-name">${r.driverName}</span>
+      <span class="ri-date">${r.date}</span>
+      <span class="ri-co">${r.company}</span>
+      <span class="ri-status">${statusLabel}</span>
+    </div>
+    <div class="ri-sub">${r.vehicle||'車両未入力'} ／ 配送${r.destinations.length}件 ／ ${r.distance?r.distance+'km':'距離未入力'} ／ 道路代${r.toll.toLocaleString()}円 ／ ガソリン${r.gas_fee.toLocaleString()}円</div>
+  </div>`;
+}
+
+// Approval
+function renderApprovalList(filter='') {
+  const reports = [...appState.reports]
+    .filter(r => r.status==='submitted' || r.status==='approved' || r.status==='rejected')
+    .sort((a,b)=>{
+      const order={submitted:0,rejected:1,approved:2};
+      return (order[a.status]||3)-(order[b.status]||3) || new Date(b.submitted_at)-new Date(a.submitted_at);
+    });
+
+  const html = `
+    <div class="sec-title">承認管理</div>
+    <div class="filter-bar" style="margin-bottom:14px">
+      <div class="field"><label>ステータス</label>
+        <select onchange="renderApprovalList(this.value)" id="approvalFilter">
+          <option value="">全て</option>
+          <option value="submitted" ${filter==='submitted'?'selected':''}>承認待ち</option>
+          <option value="approved" ${filter==='approved'?'selected':''}>承認済み</option>
+          <option value="rejected" ${filter==='rejected'?'selected':''}>差し戻し</option>
+        </select></div>
+    </div>
+    <div class="report-list">
+    ${reports.filter(r=>!filter||r.status===filter).map(r=>reportItemHTML(r)).join('') ||
+      '<div style="text-align:center;padding:40px;color:var(--text-muted)">該当する日報がありません</div>'}
+    </div>`;
+  document.getElementById('approvalList').innerHTML = html;
+  document.getElementById('approvalDetail').style.display='none';
+  document.getElementById('approvalList').style.display='block';
+}
+
+function openDetail(id) {
+  const r = appState.reports.find(x=>x.id===id);
+  if (!r) return;
+  switchPanel('approval');
+
+  const statusLabel = {submitted:'承認待ち',approved:'承認済み',rejected:'差し戻し',draft:'下書き'}[r.status];
+  const canApprove = r.status==='submitted';
+
+  let destRows = r.destinations.map(d=>`
+    <div class="detail-row">
+      <span class="detail-k">配送先 ${d.label}</span>
+      <span class="detail-v">${[d.name,d.area,d.time,d.items,d.client,d.from].filter(Boolean).join(' ／ ')||'—'}</span>
+    </div>`).join('');
+
+  const html = `
+    <div class="action-row" style="margin-bottom:14px">
+      <button class="btn-back-list" onclick="renderApprovalList()">← 一覧に戻る</button>
+      ${canApprove ? `<button class="btn-approve" onclick="approveReport('${r.id}')">✓ 承認する</button>
+      <button class="btn-reject" onclick="openRejectModal('${r.id}')">✕ 差し戻す</button>` : ''}
+      ${r.status==='approved' ? `<button class="btn-pdf" onclick="printReport('${r.id}')">🖨 PDFで印刷</button>` : ''}
+    </div>
+    <div class="detail-card">
+      <div class="detail-row"><span class="detail-k">ステータス</span><span class="detail-v"><span class="tag ${r.status}">${statusLabel}</span></span></div>
+      <div class="detail-row"><span class="detail-k">元請け会社</span><span class="detail-v">${r.company}</span></div>
+      <div class="detail-row"><span class="detail-k">乗務員</span><span class="detail-v">${r.driverName}</span></div>
+      <div class="detail-row"><span class="detail-k">作業日</span><span class="detail-v">${r.date}</span></div>
+      <div class="detail-row"><span class="detail-k">車両番号</span><span class="detail-v">${r.vehicle||'—'}</span></div>
+      <div class="detail-row"><span class="detail-k">走行距離</span><span class="detail-v">${r.distance?r.distance+' km':'—'}</span></div>
+      <div class="detail-row"><span class="detail-k">作業時刻</span><span class="detail-v">${r.dep||'—'} 〜 ${r.arr||'—'}</span></div>
+      ${destRows}
+      <div class="detail-row"><span class="detail-k">有料道路代</span><span class="detail-v">${r.toll.toLocaleString()} 円</span></div>
+      <div class="detail-row"><span class="detail-k">駐車料金</span><span class="detail-v">${r.parking.toLocaleString()} 円</span></div>
+      <div class="detail-row"><span class="detail-k">ガソリン代</span><span class="detail-v">${r.gas_fee.toLocaleString()} 円${r.gas_vol?' （'+r.gas_vol+'L）':''}</span></div>
+      <div class="detail-row"><span class="detail-k">特記事項</span><span class="detail-v">${r.incident||'なし'}</span></div>
+      <div class="detail-row"><span class="detail-k">備考</span><span class="detail-v">${r.notes||'—'}</span></div>
+      ${r.reject_comment?`<div class="detail-row"><span class="detail-k">差し戻しコメント</span><span class="detail-v" style="color:var(--red)">${r.reject_comment}</span></div>`:''}
+      ${r.approved_by?`<div class="detail-row"><span class="detail-k">承認者</span><span class="detail-v">${r.approved_by}</span></div>`:''}
+      <div class="detail-row"><span class="detail-k">提出日時</span><span class="detail-v">${new Date(r.submitted_at).toLocaleString('ja-JP')}</span></div>
+    </div>`;
+
+  document.getElementById('approvalDetail').innerHTML = html;
+  document.getElementById('approvalList').style.display='none';
+  document.getElementById('approvalDetail').style.display='block';
+}
+
+function approveReport(id) {
+  const r = appState.reports.find(x=>x.id===id);
+  if (!r) return;
+  r.status='approved'; r.approved_at=new Date().toISOString(); r.approved_by='管理者';
+  save(); openDetail(id); updateBadge();
+}
+
+function openRejectModal(id) {
+  appState.rejectTargetId = id;
+  document.getElementById('rejectComment').value='';
+  document.getElementById('rejectModal').classList.add('open');
+}
+
+function confirmReject() {
+  const r = appState.reports.find(x=>x.id===appState.rejectTargetId);
+  if (r) {
+    r.status='rejected';
+    r.reject_comment = document.getElementById('rejectComment').value||'修正してください';
+    save();
+  }
+  closeModal('rejectModal');
+  openDetail(appState.rejectTargetId);
+  updateBadge();
+}
+
+// PDF print
+// ═══ PDF TEMPLATES ═══
+
+function printReport(id) {
+  const r = appState.reports.find(x=>x.id===id);
+  if (!r) return;
+  if (r.companyId === 'nittsu') {
+    printNittsu(r);
+  } else if (r.companyId === 'seiko' || r.companyId === 'isis') {
+    printSeikoIsis(r);
+  } else if (r.companyId === 'johoku') {
+    printJohoku(r);
+  } else if (r.companyId === 'meitetsu') {
+    printMeitetsu(r);
+  } else if (r.companyId === 'musashi') {
+    printMusashi(r);
+  } else {
+    printGeneric(r);
+  }
+}
+
+// ─── 日本通運：作業完了報告書 ───
+function printNittsu(r) {
+  const w = window.open('','_blank','width=1150,height=860');
+  const dateObj = new Date(r.date);
+  const yyyy = dateObj.getFullYear();
+  const mm   = dateObj.getMonth()+1;
+  const dd   = dateObj.getDate();
+
+  // 作業明細行（各配送先・6行）
+  const workRows = r.destinations.slice(0,6).map((d,i) => {
+    const isLast = i === r.destinations.length-1;
+    return `<tr>
+      <td>${d.from||''}</td>
+      <td></td>
+      <td>${d.name||''}</td>
+      <td>${[d.items,d.client].filter(Boolean).join('　')}</td>
+      <td></td>
+      <td class="c">${d.count||''}</td>
+      <td class="c"></td>
+      <td class="c"></td>
+      <td class="c"></td>
+      <td class="c">${i===0 ? (r.odo_start||'') : ''}</td>
+      <td class="c">${d.odo||''}</td>
+      <td class="c">${d.time||''}</td>
+      <td class="c">${isLast ? (r.arr||'') : ''}</td>
+    </tr>`;
+  }).join('');
+  const emptyRows = Math.max(0, 6 - r.destinations.length);
+  const emptyRowsHtml = Array(emptyRows).fill('<tr>'+Array(13).fill('<td></td>').join('')+'</tr>').join('');
+
+  w.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<title>作業完了報告書_${r.driverName}_${r.date}</title>
+<style>
+  @page { size: A4 landscape; margin: 6mm 5mm; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'MS Gothic','Hiragino Kaku Gothic ProN',monospace;font-size:9px;color:#000;background:#fff}
+  .sheet{display:flex;gap:3px}
+  .main{flex:1}
+  .edge{writing-mode:vertical-rl;font-size:8px;border:1px solid #000;padding:4px 1px;text-align:center;letter-spacing:3px;align-self:flex-start}
+  .top{display:flex;align-items:flex-start;margin-bottom:3px;gap:10px}
+  .addr{font-size:10px;line-height:1.5}
+  .addr .co{font-size:11px;font-weight:bold}
+  h1{font-size:20px;font-weight:bold;letter-spacing:6px;text-align:center;flex:1;border-bottom:3px double #000;padding-bottom:2px;align-self:center}
+  table.appr{border-collapse:collapse;font-size:8px}
+  table.appr th,table.appr td{border:1px solid #000;text-align:center}
+  table.appr th{width:44px;height:14px;font-weight:normal}
+  table.appr td{height:30px}
+  .inforow{display:flex;gap:4px;margin-bottom:3px;align-items:stretch}
+  .fbox{border:1px solid #000;display:flex;align-items:stretch;font-size:8.5px}
+  .fbox .fl{padding:2px 4px;font-weight:bold;display:flex;align-items:center;border-right:1px solid #000;background:#fff;white-space:nowrap}
+  .fbox .fv{padding:2px 6px;display:flex;align-items:center;min-width:60px}
+  .cells{display:flex}
+  .cells span{border-right:1px solid #000;width:18px;height:100%;display:flex;align-items:center;justify-content:center}
+  .cells span:last-child{border-right:none}
+  .note-sm{font-size:7px;line-height:1.3;max-width:70px}
+  table.work{width:100%;border-collapse:collapse;margin-bottom:3px}
+  table.work th,table.work td{border:1px solid #000;padding:2px 3px;font-size:8.5px;vertical-align:middle}
+  table.work th{font-weight:bold;text-align:center;height:16px}
+  table.work td{height:24px}
+  table.work td.c{text-align:center}
+  .bottom{display:flex;gap:4px;align-items:stretch}
+  .bl{flex:1.1}
+  .br{flex:1}
+  .brow{display:flex;gap:4px;margin-bottom:3px;align-items:center}
+  table.pay{width:100%;border-collapse:collapse}
+  table.pay th,table.pay td{border:1px solid #000;padding:2px 4px;font-size:8.5px;height:18px}
+  table.pay th{font-weight:bold;text-align:left;background:#fff;width:64px}
+  table.pay td{text-align:right}
+  .paycap{font-weight:bold;font-size:9px;border:1px solid #000;border-bottom:none;padding:1px 4px;background:#fff}
+  .biko{border:1px solid #000;min-height:40px;padding:2px 4px;font-size:8.5px}
+  .biko .cap{font-size:8px;font-weight:bold}
+  .legend{font-size:6.5px;line-height:1.3;border:1px solid #000;padding:1px 3px;max-width:190px}
+  .chk{border:1px solid #000;font-size:8px;padding:2px 4px;text-align:center}
+  @media print{button{display:none!important}}
+</style>
+</head><body>
+<div class="sheet">
+<div class="main">
+
+  <div class="top">
+    <div class="addr">
+      <div class="co">日本通運株式会社　東京支店</div>
+      <div>ロジスティクスオペレーション部　輸送課　御中</div>
+    </div>
+    <h1>作業完了報告書</h1>
+    <table class="appr"><tr><th>課所長</th><th>係長</th><th>係</th></tr><tr><td></td><td></td><td></td></tr></table>
+  </div>
+
+  <div class="inforow">
+    <div class="fbox"><span class="fl">作業日</span><span class="fv">${yyyy}年　${mm}月　${dd}日</span></div>
+    <div class="fbox"><span class="fv note-sm">作業が日をまたぐ場合は日数を記入</span><span class="fv" style="border-left:1px solid #000;min-width:28px"></span></div>
+    <div class="fbox"><span class="fl">乗務員名</span><span class="fv" style="min-width:110px">${r.driverName}</span></div>
+    <div class="fbox"><span class="fl">上乗手</span><span class="fv" style="min-width:80px">${r.sub1||''}</span></div>
+    <div class="fbox" style="flex:1"><span class="fl">業者名</span><span class="fv" style="flex:1">正光運輸株式会社</span></div>
+    <div class="fbox"><span class="fl">日報No.</span><span class="fv" style="min-width:70px"></span></div>
+  </div>
+
+  <div class="inforow">
+    <div class="fbox" style="flex:1"><span class="fl">実運送社名</span><span class="fv" style="flex:1"></span></div>
+    <div class="fbox"><span class="fl">車番</span><span class="fv" style="min-width:120px">${r.vehicle||''}</span></div>
+    <div class="fbox"><span class="fl">要請トン数</span><span class="fv" style="min-width:34px"></span></div>
+    <div class="fbox"><span class="fl">標記トン数</span><span class="fv" style="min-width:34px">${r.vtype||''}</span></div>
+    <div class="fbox"><span class="fl">車種</span><span class="fv" style="min-width:34px"></span></div>
+    <div class="legend">車種略号を記入してください：ワイド-D　エアサス-A　バス-B　ロング-L　ユニック-U　軽-K　ショート-S　ウイング-W　増トン-Z　平ボディ-H　ゲート-G　リンボー-R</div>
+    <div class="fbox"><span class="fl">次数</span><span class="fv" style="min-width:26px"></span><span class="fv" style="border-left:1px solid #000;min-width:20px">次</span></div>
+  </div>
+
+  <table class="work">
+    <thead>
+      <tr>
+        <th rowspan="2" style="width:9%">発　地</th>
+        <th rowspan="2" style="width:9%">作業場所</th>
+        <th rowspan="2" style="width:9%">着　地</th>
+        <th rowspan="2">作業内容<br>品名・荷主名</th>
+        <th rowspan="2" style="width:8%">備考</th>
+        <th rowspan="2" style="width:4.5%">件数</th>
+        <th rowspan="2" style="width:4.5%">個数</th>
+        <th rowspan="2" style="width:4.5%">回数</th>
+        <th rowspan="2" style="width:6%">重量<br>(kg)</th>
+        <th colspan="2">走行メーター</th>
+        <th colspan="2">時　間</th>
+      </tr>
+      <tr>
+        <th style="width:6.5%">出発</th><th style="width:6.5%">帰着</th>
+        <th style="width:6.5%">作業開始</th><th style="width:6.5%">作業終了</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${workRows}
+      ${emptyRowsHtml}
+    </tbody>
+  </table>
+
+  <div class="bottom">
+    <div class="bl">
+      <div class="brow">
+        <div class="fbox"><span class="fl">費用配賦<br>店所No.</span><span class="fv cells" style="padding:0"><span>1</span><span>3</span><span>3</span><span>3</span><span>5</span><span>1</span></span></div>
+        <div class="fbox"><span class="fl">商品コード</span><span class="fv cells" style="padding:0"><span>3</span><span>3</span><span>0</span></span></div>
+        <div class="fbox"><span class="fl">休憩時間</span><span class="fv" style="min-width:80px">${r.break_start||''}${r.break_start||r.break_end?'〜':''}${r.break_end||''}</span></div>
+      </div>
+      <div class="brow">
+        <div class="fbox"><span class="fl">マスタ記号<br>(アルファベット)</span><span class="fv" style="min-width:50px"></span></div>
+        <div class="fbox" style="flex:1"><span class="fl">カスタマイズ<br>スペース</span><span class="fv" style="flex:1"></span></div>
+      </div>
+      <div class="biko"><div class="cap">＜備考欄＞</div>${r.incident||r.notes||''}</div>
+    </div>
+    <div class="br">
+      <div class="paycap">支払料金内訳</div>
+      <table class="pay">
+        <tr><th>基本料金</th><td>円</td><th>待機料</th><td>円</td><th>小計金額</th><td>円</td></tr>
+        <tr><th>時間割増</th><td>円</td><th>有料道路代</th><td>${r.toll?r.toll.toLocaleString():''}　円</td><th>消費税</th><td>円</td></tr>
+        <tr><th>助手料金</th><td>円</td><th>その他立替</th><td>${r.parking?r.parking.toLocaleString():''}　円</td><th>実費合計</th><td>円</td></tr>
+        <tr><th>■実費合計</th><td>円</td><th></th><td style="border:none"></td><th>★合計金額</th><td>円</td></tr>
+      </table>
+      <div class="brow" style="margin-top:3px">
+        <div class="chk" style="flex:1">品名<br>外袋確認</div>
+        <div class="chk" style="flex:1">残置<br>確認</div>
+        <div style="flex:2;font-size:7px;color:#999;text-align:right;align-self:flex-end">承認者：${r.approved_by||'—'}<br>出力：${new Date().toLocaleString('ja-JP')}</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="edge">Ａ　日通営業所提出用</div>
+</div>
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`);
+  w.document.close();
+}
+
+// ─── 正光運輸・イシス：運転日報 ───
+function printSeikoIsis(r) {
+  const w = window.open('','_blank','width=1100,height=850');
+  const dateObj = new Date(r.date);
+  const yyyy = dateObj.getFullYear();
+  const mm   = dateObj.getMonth()+1;
+  const dd   = dateObj.getDate();
+  const days = ['日','月','火','水','木','金','土'];
+  const dow  = days[dateObj.getDay()];
+
+  const fmtTime = t => {
+    if (!t) return '<span class="ph">時</span><span class="ph" style="margin-left:24px">分</span>';
+    const [h,m] = t.split(':');
+    return `${Number(h)}<span class="ph">時</span> ${m}<span class="ph">分</span>`;
+  };
+
+  // 積場所・降ろし場所（7行）
+  const destRows = r.destinations.map(d => `
+    <tr>
+      <td class="dcell">${d.from||d.name||''}</td>
+      <td class="dcell">${d.from ? d.name||'' : ''}</td>
+      <td class="dcell">${[d.items,d.client].filter(Boolean).join(' ')}</td>
+    </tr>`).join('');
+  const emptyCount = Math.max(0, 7 - r.destinations.length);
+  const emptyDestRows = Array(emptyCount).fill('<tr><td class="dcell"></td><td class="dcell"></td><td class="dcell"></td></tr>').join('');
+
+  const totalFee = (r.toll||0)+(r.parking||0);
+  const clientName = r.client||r.destinations.map(d=>d.name||d.from).filter(Boolean).join('、')||'';
+
+  w.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<title>運転日報_${r.driverName}_${r.date}</title>
+<style>
+  @page { size: A4 landscape; margin: 10mm 12mm; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'MS Gothic','Hiragino Kaku Gothic ProN',monospace;font-size:11px;color:#000;background:#fff}
+  .head{display:flex;align-items:baseline;gap:40px;margin-bottom:4px}
+  .head h1{font-size:24px;font-weight:bold;letter-spacing:14px}
+  .head .no{font-size:12px;display:flex;align-items:baseline;gap:6px;flex:1}
+  .head .no-line{border-bottom:1px solid #000;flex:1;max-width:340px;min-height:16px;padding:0 4px}
+  table.form{width:100%;border-collapse:collapse;border:2px solid #000}
+  table.form td{border:1px solid #000;padding:3px 8px;height:26px;vertical-align:middle;font-size:11px}
+  td.lbl{font-weight:bold;text-align:center;width:13%;background:#fff}
+  td.c{text-align:center}
+  td.r{text-align:right}
+  .ph{color:#000;font-size:10px;margin-left:4px}
+  .sama{display:flex;justify-content:space-between;align-items:baseline}
+  .dhead{font-weight:bold;text-align:center;background:#fff}
+  td.dcell{height:24px}
+  .unit{font-size:10px;margin-left:4px}
+  .company{font-weight:bold;font-size:17px;letter-spacing:2px;text-align:right;margin-top:4px}
+  @media print{button{display:none!important}}
+</style>
+</head><body>
+
+<div class="head">
+  <h1>運　転　日　報</h1>
+  <div class="no">No.<span class="no-line"></span></div>
+</div>
+
+<table class="form">
+  <tr>
+    <td class="lbl">運転年月日</td>
+    <td class="c" style="width:37%">${yyyy}年　${mm}月　${dd}日（${dow}）</td>
+    <td class="lbl" style="width:14%">運転者(助手)名</td>
+    <td class="c">${r.driverName}${r.sub1?'（'+r.sub1+'）':''}</td>
+  </tr>
+  <tr>
+    <td class="lbl">車両番号</td>
+    <td class="c">${r.vehicle||''}</td>
+    <td class="lbl">トン車</td>
+    <td class="c">${r.vtype||''}　<span class="unit">t</span></td>
+  </tr>
+  <tr>
+    <td class="lbl">お得意先名</td>
+    <td colspan="3"><div class="sama"><span>${clientName}</span><span class="unit">様</span></div></td>
+  </tr>
+  <tr>
+    <td class="lbl">開始時間</td>
+    <td class="c">${fmtTime(r.dep)}</td>
+    <td class="lbl">終了時間</td>
+    <td class="c">${fmtTime(r.arr)}</td>
+  </tr>
+</table>
+
+<table class="form" style="border-top:none">
+  <tr>
+    <td class="lbl" style="width:13%">出発メーター</td>
+    <td class="r" style="width:20%">${r.odo_start||''}<span class="unit">km</span></td>
+    <td class="lbl" style="width:12%">終了メーター</td>
+    <td class="r" style="width:20%">${r.odo_end||''}<span class="unit">km</span></td>
+    <td class="lbl" style="width:10%">走行距離</td>
+    <td class="r">${r.distance||''}<span class="unit">km</span></td>
+  </tr>
+</table>
+
+<table class="form" style="border-top:none">
+  <tr>
+    <td class="dhead" style="width:19%">積　場　所</td>
+    <td class="dhead" style="width:19%">降ろし場所</td>
+    <td class="dhead">備　　　考</td>
+  </tr>
+  ${destRows}
+  ${emptyDestRows}
+</table>
+
+<table class="form" style="border-top:none">
+  <tr>
+    <td class="lbl" style="width:13%">有料道路</td>
+    <td class="r" style="width:20%">${r.toll ? r.toll.toLocaleString() : ''}<span class="unit">円</span></td>
+    <td class="lbl" style="width:12%">駐車料</td>
+    <td class="r" style="width:20%">${r.parking ? r.parking.toLocaleString() : ''}<span class="unit">円</span></td>
+    <td class="lbl" style="width:10%">合計</td>
+    <td class="r">${totalFee ? totalFee.toLocaleString() : ''}<span class="unit">円</span></td>
+  </tr>
+  <tr>
+    <td class="lbl">ETCカードNo.</td>
+    <td class="c"></td>
+    <td class="lbl">給油時メーター</td>
+    <td class="r"><span class="unit">Km</span></td>
+    <td class="lbl">給油量</td>
+    <td class="r">${r.gas_vol||''}<span class="unit">ℓ</span></td>
+  </tr>
+</table>
+
+<table class="form" style="border-top:none">
+  <tr>
+    <td class="lbl" style="width:13%">休憩</td>
+    <td style="width:44.5%"><span class="unit">時間</span>　${r.break_start||''}　〜　${r.break_end||''}</td>
+    <td class="lbl" style="width:12%">場所</td>
+    <td>${r.break_place||''}</td>
+  </tr>
+  <tr>
+    <td class="lbl" style="height:52px">その他</td>
+    <td colspan="3">${r.incident||r.notes||''}</td>
+  </tr>
+</table>
+
+<div class="company">正光運輸株式会社</div>
+
+<div style="text-align:right;font-size:7px;color:#999;margin-top:2px">
+  承認者：${r.approved_by||'—'}　出力：${new Date().toLocaleString('ja-JP')}
+</div>
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`);
+  w.document.close();
+}
+
+// ─── 汎用フォーマット（その他元請け） ───
+function printGeneric(r) {
+  const w = window.open('','_blank','width=850,height:1000');
+  const destRows = r.destinations.map(d=>`
+    <tr>
+      <td style="text-align:center;font-weight:bold">配送先 ${d.label}</td>
+      <td>${[d.name,d.area].filter(Boolean).join(' ')}</td>
+      <td style="text-align:center">${d.time||''}</td>
+      <td>${d.items||d.client||''}</td>
+      <td style="text-align:right">${d.odo?d.odo+' km':''}</td>
+    </tr>`).join('');
+  w.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<title>運行日報_${r.driverName}_${r.date}</title>
+<style>
+  @page{size:A4;margin:15mm}
+  body{font-family:'Hiragino Kaku Gothic ProN',sans-serif;font-size:12px;color:#000}
+  h1{font-size:20px;text-align:center;border-bottom:3px solid #000;padding-bottom:6px;margin-bottom:12px;letter-spacing:4px}
+  table{width:100%;border-collapse:collapse;margin-bottom:12px}
+  th,td{border:1px solid #000;padding:5px 8px;font-size:11px;vertical-align:top}
+  th{background:#eee;font-weight:bold;text-align:center}
+  .section{font-weight:bold;font-size:12px;background:#ddd;padding:4px 8px;border:1px solid #000;margin:10px 0 0}
+  @media print{button{display:none}}
+</style></head><body>
+<h1>運　行　日　報</h1>
+<div style="text-align:right;font-size:10px;margin-bottom:8px">元請け：${r.company}　提出：${r.date}　<b style="color:#c00">✓ 承認済み</b></div>
+<div class="section">基本情報</div>
+<table><tbody>
+  <tr><th>乗務員</th><td>${r.driverName}</td><th>作業日</th><td>${r.date}</td></tr>
+  <tr><th>車両番号</th><td>${r.vehicle||'—'}</td><th>車種</th><td>${r.vtype||'—'}</td></tr>
+  <tr><th>出発メーター</th><td>${r.odo_start||'—'} km</td><th>終了メーター</th><td>${r.odo_end||'—'} km</td></tr>
+  <tr><th>走行距離</th><td><b>${r.distance||'—'} km</b></td><th>作業時刻</th><td>${r.dep||'—'} 〜 ${r.arr||'—'}</td></tr>
+</tbody></table>
+<div class="section">配送記録</div>
+<table><thead><tr><th>配送先</th><th>現場・店名</th><th>着時刻</th><th>荷物内容</th><th>到着メーター</th></tr></thead>
+<tbody>${destRows}</tbody></table>
+<div class="section">費用</div>
+<table><tbody>
+  <tr><th>有料道路代</th><td>${r.toll.toLocaleString()} 円</td><th>駐車料金</th><td>${r.parking.toLocaleString()} 円</td></tr>
+  <tr><th>ガソリン代</th><td>${r.gas_fee.toLocaleString()} 円</td><th>給油量</th><td>${r.gas_vol?r.gas_vol+' L':'—'}</td></tr>
+</tbody></table>
+${r.incident||r.notes?`<div class="section">特記事項・備考</div><table><tbody>
+  <tr><th>特記事項</th><td>${r.incident||'なし'}</td></tr>
+  <tr><th>備考</th><td>${r.notes||'—'}</td></tr>
+</tbody></table>`:''}
+<div style="margin-top:20px;text-align:right;font-size:10px">承認者：${r.approved_by||'—'}　承認日時：${r.approved_at?new Date(r.approved_at).toLocaleString('ja-JP'):'—'}</div>
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`);
+  w.document.close();
+}
+
+
+// ─── 城北陸運：運転作業日報 ───
+function printJohoku(r) {
+  const w = window.open('','_blank','width=1150,height=860');
+  const dateObj = new Date(r.date);
+  const days=['日','月','火','水','木','金','土'];
+  const yyyy=dateObj.getFullYear(), mm=dateObj.getMonth()+1, dd=dateObj.getDate(), dow=days[dateObj.getDay()];
+  const destRows = r.destinations.map(d=>`<tr>
+    <td>${d.from||d.name||''}${d.from&&d.name?' → '+d.name:''}</td><td>${d.items||d.client||''}</td>
+    <td class="c"></td><td class="c"></td>
+    <td class="c">${d.time||'：'}</td><td class="c">：</td><td class="c">：　〜　：</td>
+    <td class="r">${d.odo||''}<span class="u">Km</span></td></tr>`).join('');
+  const emptyCount=Math.max(0,20-r.destinations.length);
+  const empties=Array(emptyCount).fill('<tr><td></td><td></td><td class="c"></td><td class="c"></td><td class="c">：</td><td class="c">：</td><td class="c">：　〜　：</td><td class="r"><span class="u">Km</span></td></tr>').join('');
+  const checkItems={ブレーキ:['踏みしろ・きき具合','液量・漏れ','空気圧の上がり具合','ブレーキバルブの排気音','駐車ブレーキの引きしろ'],原動機:['冷却水の量','ファンベルトの張り・損傷','エンジンオイルの量','かかり具合・異音','加速の状況'],'タイヤ・ホイール':['空気圧・亀裂','ホイールの亀裂・損傷','異常な摩耗','みぞの深さ','グリップのゆるみ・損傷']};
+  const singles=['バッテリー：液量・ターミナル','灯火装置：点灯・点滅の具合','ウインドウォッシャー：噴射状況・液量','ワイパー：払拭状態','工具：有・無','非常信号灯・停止板：有・無'];
+  const checksHtml=Object.entries(checkItems).map(([grp,items])=>`<div class="check-group"><div class="check-group-label">${grp}</div>${items.map(t=>`<div class="check-row"><span class="check-name">${t}</span><div class="check-box"></div></div>`).join('')}</div>`).join('')+singles.map(t=>{const[g,d]=t.split('：');return`<div class="check-row"><span class="check-name"><b>${g}</b>${d?'：'+d:''}</span><div class="check-box"></div></div>`;}).join('');
+  const html=`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<title>運転作業日報_${r.driverName}_${r.date}</title>
+<style>
+@page{size:A4 landscape;margin:6mm 5mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'MS Gothic','Hiragino Kaku Gothic ProN',monospace;font-size:9.5px;color:#000;background:#fff}
+.title-row{display:flex;align-items:baseline;padding:2px 8px;gap:16px}
+.title-row .date{font-size:13px}
+.title-row h1{margin-left:auto;font-size:19px;font-weight:bold;letter-spacing:5px}
+.outer{width:100%;border:2px solid #000}
+table.info{width:100%;border-collapse:collapse}
+table.info td{border:1px solid #000;padding:2px 6px;font-size:9.5px;height:22px;vertical-align:middle}
+table.info td.l{font-weight:bold;text-align:center;width:9%}
+table.info td.v{width:24.3%}
+table.info td.r{text-align:right}
+.u{font-size:8.5px;margin-left:3px}
+.mid-layout{display:grid;grid-template-columns:1fr 280px}
+.main-table-wrap{border-right:1px solid #000}
+table.main{width:100%;border-collapse:collapse}
+table.main th,table.main td{border:1px solid #000;padding:1px 3px;font-size:8.5px;vertical-align:middle;height:16px}
+table.main th{font-weight:bold;text-align:center}
+table.main td.c{text-align:center}
+table.main td.r{text-align:right}
+.check-section{padding:3px;font-size:8px}
+.check-title{font-weight:bold;font-size:9px;text-align:center;border-bottom:1px solid #000;padding-bottom:2px;margin-bottom:2px}
+.check-group{margin-bottom:2px}.check-group-label{font-weight:bold;background:#fff;border:1px solid #000;padding:0 4px;margin-bottom:1px;font-size:8px;display:inline-block}
+.check-row{display:flex;align-items:center;gap:4px;padding:0 2px;border-bottom:1px dotted #999;font-size:7.5px;min-height:13px}
+.check-name{flex:1}.check-box{border:1px solid #000;width:11px;height:11px;flex-shrink:0}
+.footer-row{display:flex;border-top:1px solid #000;font-size:8.5px}
+.footer-cell{border-right:1px solid #000;padding:2px 5px}.footer-cell:last-child{border-right:none}
+.company-block{font-size:8.5px;line-height:1.5;padding:2px 6px}
+.company-block .big{font-weight:bold;font-size:10.5px}
+.garage{font-size:7.5px;line-height:1.4;padding:2px 6px;border-left:1px solid #000}
+table.kanri{border-collapse:collapse;font-size:7.5px;margin-left:auto}
+table.kanri th,table.kanri td{border:1px solid #000;text-align:center}
+table.kanri th{width:40px;height:12px;font-weight:normal}
+table.kanri td{height:26px}
+.appr{color:#c00;font-weight:bold;font-size:9px}
+@media print{button{display:none!important}}
+</style></head><body>
+<div class="title-row"><span class="date">${yyyy}年　${mm}月　${dd}日（${dow}）</span><h1>運転作業日報</h1></div>
+<div class="outer">
+<table class="info">
+  <tr><td class="l">運転手</td><td class="v">${r.driverName}</td><td class="l">得意先</td><td class="v">${r.client||r.destinations.map(d=>d.name||d.from).filter(Boolean).slice(0,2).join('、')||''}</td><td class="l">車番</td><td class="v">${r.vehicle||''}</td></tr>
+  <tr><td class="l">出庫時間</td><td class="v c" style="text-align:center">${r.dep||'：'}</td><td class="l">出庫キロ</td><td class="v r">${r.odo_start||''}<span class="u">Km</span></td><td class="l">始業キロ</td><td class="v r"><span class="u">Km</span></td></tr>
+  <tr><td class="l">帰庫時間</td><td class="v" style="text-align:center">${r.arr||'：'}</td><td class="l">帰庫キロ</td><td class="v r">${r.odo_end||''}<span class="u">Km</span></td><td class="l">終業キロ</td><td class="v r"><span class="u">Km</span></td></tr>
+  <tr><td class="l">首都高速</td><td class="v r">￥　${r.metropolitan||r.toll||''}</td><td class="l">全走行キロ</td><td class="v r">${r.distance||''}<span class="u">Km</span></td><td class="l">実車キロ</td><td class="v r"><span class="u">Km</span></td></tr>
+  <tr><td class="l">高速道路</td><td class="v r">￥　${r.highway||''}</td><td class="l">給油キロ</td><td class="v r"><span class="u">Km</span></td><td class="l">給油量</td><td class="v r">${r.gas_vol||''}<span class="u">L</span></td></tr>
+</table>
+<div class="mid-layout">
+  <div class="main-table-wrap">
+    <table class="main"><thead>
+      <tr><th style="width:17%">積地・卸地</th><th style="width:13%">積載物</th><th style="width:4%">積</th><th style="width:4%">卸</th><th style="width:9%">着時間</th><th style="width:9%">発時間</th><th style="width:14%">作業時間</th><th style="width:9%">着キロ</th></tr>
+    </thead><tbody>${destRows}${empties}</tbody></table>
+    <div class="footer-row">
+      <div class="footer-cell" style="width:16%;font-weight:bold;display:flex;align-items:center">休憩時間・場所</div>
+      <div class="footer-cell" style="flex:1">
+        <div style="border-bottom:1px solid #000;min-height:15px;padding:1px 2px">${r.break_start||'：'}　〜　${r.break_end||'：'}　${r.break_place||''}</div>
+        <div style="min-height:15px;padding:1px 2px">：　〜　：</div>
+      </div>
+      <div class="footer-cell" style="flex:1">${r.incident||r.notes||''}</div>
+    </div>
+  </div>
+  <div class="check-section">
+    <div class="check-title">日常点検表（良レ・否×）</div>
+    ${checksHtml}
+    <div class="company-block">
+      <div class="big">正光運輸㈱江東区扇橋3-11-8</div>
+      <div class="big">TEL 03-5690-3670　FAX 03-5690-3692</div>
+      <div>TEL 03-3956-0044　FAX 03-3956-3821</div>
+    </div>
+    <div style="display:flex;align-items:stretch">
+      <div class="garage" style="border-left:none;flex:1">桑原自動車　03-3974-6103<br>UDトラックス関東支社　03-3965-2394<br>桧田自動車　048-421-0589</div>
+      <table class="kanri"><tr><th>運行管理</th><th>整備管理</th></tr><tr><td><span class="appr">${r.approved_by?'承認済':''}</span></td><td></td></tr></table>
+    </div>
+  </div>
+</div>
+</div>
+<div style="text-align:right;font-size:7px;color:#999;margin-top:2px">承認者：${r.approved_by||'—'}　出力：${new Date().toLocaleString('ja-JP')}</div>
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`;
+  w.document.write(html);
+  w.document.close();
+}
+
+// ─── 名鉄運輸：集貨上番業務日報 ───
+function printMeitetsu(r) {
+  const w = window.open('','_blank','width=860,height=1100');
+  const dateObj = new Date(r.date);
+  const days=['日','月','火','水','木','金','土'];
+  const yyyy=dateObj.getFullYear(), mm=dateObj.getMonth()+1, dd=dateObj.getDate(), dow=days[dateObj.getDay()];
+  const destRows=r.destinations.map((d,i)=>`<tr>
+    <td class="c">${i+1}</td><td class="c">${d.time||'：'}</td>
+    <td class="r">${d.odo?d.odo+' km':''}</td><td class="r"></td>
+    <td class="c">${d.time||'：'}</td><td class="c">：</td></tr>`).join('');
+  const emptyCount=Math.max(0,15-r.destinations.length);
+  const empties=Array(emptyCount).fill('<tr><td class="c"></td><td class="c">：</td><td class="r"></td><td class="r"></td><td class="c">：</td><td class="c">：</td></tr>').join('');
+  const html=`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<title>集貨上番業務日報_${r.driverName}_${r.date}</title>
+<style>
+@page{size:A4 portrait;margin:10mm 8mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'MS Gothic','Hiragino Kaku Gothic ProN',monospace;font-size:10px;color:#000;background:#fff}
+.outer{width:100%;border:2px solid #000}
+.title-bar{display:flex;align-items:center;padding:5px 10px;border-bottom:2px solid #000}
+.title-bar h1{font-size:18px;font-weight:bold;letter-spacing:6px;flex:1}
+.title-bar .sub{font-size:10px;text-align:right}
+.hgrid{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #000}
+.hgblock{padding:5px 8px;border-right:1px solid #000}.hgblock:last-child{border-right:none}
+.hrow{display:flex;align-items:center;margin-bottom:3px;font-size:9px}
+.hlbl{font-weight:bold;min-width:80px}.hval{border-bottom:1px solid #000;flex:1;min-height:14px;padding:0 3px;text-align:right}
+.hval.l{text-align:left}
+.sbar{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #000}
+.sitem{border-right:1px solid #000;padding:3px 6px;font-size:9px}.sitem:last-child{border-right:none}
+.slbl{font-weight:bold;font-size:8px}.sval{border-bottom:1px solid #000;min-height:14px;text-align:right;padding:0 2px}
+table.det{width:100%;border-collapse:collapse}
+table.det th,table.det td{border:1px solid #000;padding:2px 4px;font-size:9px;height:18px;vertical-align:middle}
+table.det th{background:#eee;font-weight:bold;text-align:center;font-size:8.5px}
+table.det td.c{text-align:center}table.det td.r{text-align:right}
+.note-row{border-top:1px solid #000;padding:4px 8px;font-size:9px;min-height:28px}
+.note-lbl{font-weight:bold;font-size:8px;margin-bottom:2px}
+.sign-row{display:flex;border-top:1px solid #000}
+.scell{flex:1;border-right:1px solid #000;padding:3px 6px;font-size:8px;font-weight:bold;min-height:24px}.scell:last-child{border-right:none}
+.approved-stamp{color:#c00;font-size:10px;font-weight:bold;text-align:center}
+@media print{button{display:none!important}}
+</style></head><body>
+<div class="outer">
+<div class="title-bar"><h1>集貨上番業務日報</h1><div class="sub">名鉄運輸株式会社<br>正光運輸株式会社</div></div>
+<div class="hgrid">
+  <div class="hgblock">
+    <div class="hrow"><span class="hlbl">年月日</span><span class="hval l">${yyyy}年${mm}月${dd}日（${dow}）</span></div>
+    <div class="hrow"><span class="hlbl">乗務員名</span><span class="hval l">${r.driverName}</span></div>
+    <div class="hrow"><span class="hlbl">車両番号</span><span class="hval l">${r.vehicle||''}</span></div>
+  </div>
+  <div class="hgblock">
+    <div class="hrow"><span class="hlbl">発着時間</span><span class="hval">${r.dep||''}</span><span style="margin:0 3px">〜</span><span class="hval">${r.arr||''}</span></div>
+    <div class="hrow"><span class="hlbl">走行距離</span><span class="hval" style="font-weight:bold;color:#c00">${r.distance||''}</span><span style="margin-left:3px;font-size:9px">km</span></div>
+    <div class="hrow"><span class="hlbl">出発メーター</span><span class="hval">${r.odo_start||''}</span><span style="font-size:9px;margin:0 4px">km　終了</span><span class="hval">${r.odo_end||''}</span><span style="font-size:9px;margin-left:3px">km</span></div>
+  </div>
+</div>
+<div class="sbar">
+  <div class="sitem"><div class="slbl">集荷数量</div><div class="sval">${r.pickup_qty||''}</div></div>
+  <div class="sitem"><div class="slbl">集配数量</div><div class="sval">${r.delivery_qty||''}</div></div>
+  <div class="sitem"><div class="slbl">実キロ（km）</div><div class="sval">${r.real_km||''}</div></div>
+  <div class="sitem"><div class="slbl">最遠距離（km）</div><div class="sval">${r.max_km||''}</div></div>
+</div>
+<div class="sbar">
+  <div class="sitem"><div class="slbl">ガソリン（L）</div><div class="sval">${r.gas_meitetsu||r.gas_vol||''}</div></div>
+  <div class="sitem"><div class="slbl">報償費（円）</div><div class="sval">${r.reward||''}</div></div>
+  <div class="sitem"><div class="slbl">有料道路代（円）</div><div class="sval">${r.toll||''}</div></div>
+  <div class="sitem"><div class="slbl">駐車料（円）</div><div class="sval">${r.parking||''}</div></div>
+</div>
+<table class="det"><thead>
+  <tr><th style="width:28px">No.</th><th>発着時刻</th><th>着地メーター</th><th>金額（円）</th><th>開始時刻</th><th>終了時刻</th></tr>
+</thead><tbody>${destRows}${empties}</tbody></table>
+<div class="note-row"><div class="note-lbl">特記事項・備考</div><div>${r.incident||r.notes||''}</div></div>
+<div class="sign-row">
+  <div class="scell">確認者<div class="approved-stamp">${r.approved_by?'承認済':''}</div></div>
+  <div class="scell">営業所長</div><div class="scell">係</div>
+  <div class="scell" style="flex:2;text-align:right;font-weight:normal;font-size:7.5px">出力：${new Date().toLocaleString('ja-JP')}</div>
+</div>
+</div>
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`;
+  w.document.write(html);
+  w.document.close();
+}
+
+// ─── 武蔵貨物自動車：業務日報 ───
+function printMusashi(r) {
+  const w = window.open('','_blank','width=1150,height=860');
+  const dateObj = new Date(r.date);
+  const days=['日','月','火','水','木','金','土'];
+  const yyyy=dateObj.getFullYear(), mm=dateObj.getMonth()+1, dd=dateObj.getDate(), dow=days[dateObj.getDay()];
+  const reiwa = yyyy - 2018;
+  const mkRow=(d,i)=>`<tr>
+    <td class="c">${i+1}</td><td>${d.client||d.name||''}</td>
+    <td class="c">${d.count||''}</td><td class="c"></td>
+    <td class="c"></td><td class="c"></td><td class="c"></td>
+    <td>${d.items||''}</td></tr>`;
+  const emptyRow=(n)=>`<tr><td class="c">${n}</td><td></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td><td></td></tr>`;
+  const rows1=[];
+  for(let i=0;i<15;i++){ rows1.push(r.destinations[i]?mkRow(r.destinations[i],i):emptyRow(i+1)); }
+  const rows2=[];
+  for(let i=15;i<30;i++){ rows2.push(r.destinations[i]?mkRow(r.destinations[i],i):emptyRow(i+1)); }
+  const thHtml=`<tr><th style="width:6%">　</th><th style="width:30%">荷　主　名</th><th style="width:9%">送状<br>枚数</th><th style="width:9%">バラ積<br>個数</th><th style="width:11%">重量<br>kg・才</th><th style="width:9%">パレット<br>枚数</th><th style="width:11%">重量<br>kg・才</th><th>摘要</th></tr>`;
+  const html=`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<title>業務日報_${r.driverName}_${r.date}</title>
+<style>
+@page{size:A4 landscape;margin:6mm 5mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'MS Gothic','Hiragino Kaku Gothic ProN',monospace;font-size:9px;color:#000;background:#fff}
+.head{display:flex;align-items:flex-end;gap:14px;margin-bottom:3px}
+.head h1{font-size:18px;font-weight:bold;letter-spacing:4px}
+.head .date{font-size:11px}
+table.bx{border-collapse:collapse}
+table.bx th,table.bx td{border:1px solid #000;padding:1px 4px;font-size:8px;vertical-align:middle}
+table.bx th{font-weight:bold;text-align:center}
+.head-right{margin-left:auto;display:flex;gap:4px;align-items:flex-end}
+.layout{display:flex;gap:4px;align-items:stretch}
+.left{width:27%;display:flex;flex-direction:column;gap:3px}
+.right{flex:1;display:flex;flex-direction:column;gap:3px}
+table.kv{width:100%;border-collapse:collapse}
+table.kv td{border:1px solid #000;padding:1px 4px;font-size:8.5px;height:17px;vertical-align:middle}
+table.kv td.l{font-weight:bold;width:44%}
+table.kv td.r{text-align:right}
+.u{font-size:8px;margin-left:2px}
+table.det{width:100%;border-collapse:collapse}
+table.det th,table.det td{border:1px solid #000;padding:1px 3px;font-size:8px;height:14.5px;vertical-align:middle}
+table.det th{font-weight:bold;text-align:center;font-size:7.5px}
+table.det td.c{text-align:center}
+.detwrap{display:flex;gap:3px}
+.detwrap>div{flex:1}
+.jiko{border:1px solid #000;padding:2px 4px;font-size:8px;flex:1;min-height:56px}
+.jiko .cap{font-weight:bold;font-size:8px}
+.bottom-note{display:flex;align-items:flex-end;margin-top:2px;font-size:7.5px;gap:10px}
+.bottom-note .co{margin-left:auto;font-weight:bold;font-size:11px;letter-spacing:1px}
+.appr{color:#c00;font-weight:bold;font-size:9px;text-align:center}
+@media print{button{display:none!important}}
+</style></head><body>
+
+<div class="head">
+  <h1>業務日報（集配）</h1>
+  <div class="date">令和${reiwa}年　${mm}月　${dd}日（${dow}）曜日　天候（　　）</div>
+  <div class="head-right">
+    <table class="bx"><tr><th style="width:110px">所属店所名</th></tr><tr><td style="height:20px"></td></tr></table>
+    <table class="bx"><tr><th>運行管理者印</th><th>整備管理者印</th></tr><tr><td style="height:20px;width:54px"><span class="appr">${r.approved_by?'承認済':''}</span></td><td style="width:54px"></td></tr></table>
+    <table class="bx"><tr><th style="width:110px">運転(点検)者名</th></tr><tr><td style="height:20px">${r.driverName}</td></tr></table>
+    <table class="bx"><tr><th style="width:90px">作業員名</th></tr><tr><td style="height:20px"></td></tr></table>
+    <table class="bx"><tr><th style="width:80px">偏荷重の有無</th></tr><tr><td style="height:20px;text-align:center">有　・　無</td></tr></table>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="left">
+    <table class="kv">
+      <tr><td class="l">車輛登録番号</td><td>${r.vehicle||''}</td></tr>
+      <tr><td class="l">車輛コードナンバー</td><td></td></tr>
+      <tr><td class="l">車輛の最大積載量</td><td class="r"><span class="u">kg</span></td></tr>
+    </table>
+    <table class="kv">
+      <tr><td class="l">出勤時間</td><td class="r">：</td></tr>
+      <tr><td class="l">出庫時間（場所）</td><td>${r.dep||'：'}　（　　）</td></tr>
+      <tr><td class="l">帰庫時間（場所）</td><td>${r.arr||'：'}　（　　）</td></tr>
+      <tr><td class="l">退勤時間</td><td class="r">：</td></tr>
+      <tr><td class="l">深夜時間帯</td><td>：　〜　：</td></tr>
+      <tr><td class="l">休憩時間帯</td><td>${r.break_start||'：'}　〜　${r.break_end||'：'}</td></tr>
+      <tr><td class="l">休憩場所</td><td>${r.break_place||''}</td></tr>
+    </table>
+    <table class="kv">
+      <tr><td class="l">走行キロ　帰庫時メーター</td><td class="r">${r.odo_end||''}<span class="u">km</span></td></tr>
+      <tr><td class="l">　　　　　出庫時メーター</td><td class="r">${r.odo_start||''}<span class="u">km</span></td></tr>
+      <tr><td class="l">　　　　　差　引　計</td><td class="r" style="font-weight:bold">${r.distance||''}<span class="u">km</span></td></tr>
+    </table>
+    <table class="kv">
+      <tr><td class="l">燃料　軽油</td><td class="r">注入　　<span class="u">ℓ</span>　補給先　社内・社外</td></tr>
+      <tr><td class="l">　　　ガソリン</td><td class="r">注入　${r.gas_vol||''}<span class="u">ℓ</span>　補給先　社内・社外</td></tr>
+      <tr><td class="l">　　　その他</td><td class="r">注入　　<span class="u">ℓ</span></td></tr>
+      <tr><td class="l">オイル</td><td class="r">補給　　<span class="u">ℓ</span></td></tr>
+    </table>
+    <div class="jiko"><div class="cap">交通事故等異常事態の概要及び原因</div>${r.incident||''}</div>
+  </div>
+
+  <div class="right">
+    <div class="detwrap">
+      <div><table class="det"><thead>${thHtml}</thead><tbody>${rows1.join('')}</tbody></table></div>
+      <div><table class="det"><thead>${thHtml}</thead><tbody>${rows2.join('')}</tbody></table></div>
+    </div>
+    <table class="kv" style="width:100%">
+      <tr>
+        <td class="l" style="width:10%">業務実績計</td>
+        <td>集配回数　　回　／　集配軒数　　軒</td>
+        <td>バラ積　個数　　個　重量　　kg・才</td>
+        <td>パレット積　枚数　　枚　　　kg・才</td>
+        <td>現金収受件数　　件</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="bottom-note">
+  <span>出張配送は(1)にダイヤグラムの合計を記入する。送状枚数は同店は1店とする。</span>
+  <span style="color:#999;font-size:7px">承認者：${r.approved_by||'—'}　出力：${new Date().toLocaleString('ja-JP')}</span>
+  <span class="co">武蔵貨物自動車グループ</span>
+</div>
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`;
+  w.document.write(html);
+  w.document.close();
+}
+
+
+// Records
+function populateDriverFilter() {
+  const sel = document.getElementById('f-driver-filter');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">全員</option>' +
+    appState.drivers.filter(d=>d.active).map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+  sel.value = cur;
+}
+
+function populateCoFilter() {
+  const sel = document.getElementById('f-co-filter');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">全社</option>' +
+    COMPANIES.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+function renderRecords() {
+  const drvId = document.getElementById('f-driver-filter')?.value||'';
+  const period = document.getElementById('f-period-filter')?.value||'month';
+  const dateVal = document.getElementById('f-date-filter')?.value||new Date().toISOString().slice(0,7);
+  const coId = document.getElementById('f-co-filter')?.value||'';
+
+  let filtered = appState.reports.filter(r=>{
+    if (drvId && r.driverId!==drvId) return false;
+    if (coId && r.companyId!==coId) return false;
+    if (period==='day') return r.date===dateVal;
+    if (period==='month') return r.date.slice(0,7)===dateVal.slice(0,7);
+    if (period==='year') return r.date.slice(0,4)===dateVal.slice(0,4);
+    return true;
+  }).sort((a,b)=>b.date.localeCompare(a.date));
+
+  const totalDist = filtered.reduce((a,r)=>a+(r.distance||0),0);
+  const totalDests = filtered.reduce((a,r)=>a+r.destinations.length,0);
+  const totalToll = filtered.reduce((a,r)=>a+(r.toll||0),0);
+  const totalGas = filtered.reduce((a,r)=>a+(r.gas_fee||0),0);
+  const activeDays = [...new Set(filtered.map(r=>r.date))].length;
+
+  document.getElementById('recordsSummary').innerHTML = `
+    <div class="card-title">📊 集計サマリー</div>
+    <div class="row4">
+      <div style="text-align:center"><div style="font-size:11px;color:var(--text-muted);font-weight:700">日報件数</div><div style="font-size:22px;font-weight:800;color:var(--blue)">${filtered.length}</div></div>
+      <div style="text-align:center"><div style="font-size:11px;color:var(--text-muted);font-weight:700">稼働日数</div><div style="font-size:22px;font-weight:800;color:var(--blue)">${activeDays}</div></div>
+      <div style="text-align:center"><div style="font-size:11px;color:var(--text-muted);font-weight:700">総走行距離</div><div style="font-size:22px;font-weight:800;color:var(--blue)">${totalDist.toLocaleString()}<span style="font-size:12px">km</span></div></div>
+      <div style="text-align:center"><div style="font-size:11px;color:var(--text-muted);font-weight:700">配送件数</div><div style="font-size:22px;font-weight:800;color:var(--blue)">${totalDests}</div></div>
+    </div>
+    <div class="row2" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--blue-soft)">
+      <div style="text-align:center"><div style="font-size:11px;color:var(--text-muted);font-weight:700">有料道路代合計</div><div style="font-size:18px;font-weight:700">${totalToll.toLocaleString()} 円</div></div>
+      <div style="text-align:center"><div style="font-size:11px;color:var(--text-muted);font-weight:700">ガソリン代合計</div><div style="font-size:18px;font-weight:700">${totalGas.toLocaleString()} 円</div></div>
+    </div>`;
+
+  document.getElementById('recordsList').innerHTML = filtered.length
+    ? '<div class="report-list">'+filtered.map(r=>reportItemHTML(r)).join('')+'</div>'
+    : '<div style="text-align:center;padding:40px;color:var(--text-muted)">該当する記録がありません</div>';
+}
+
+// Bind filter changes
+document.addEventListener('DOMContentLoaded', ()=>{
+  ['f-driver-filter','f-period-filter','f-date-filter','f-co-filter'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', renderRecords);
+  });
+});
+
+// Driver management
+function renderDriverPanel() {
+  const tbody = appState.drivers.map(d=>`
+    <tr>
+      <td>${d.name}</td>
+      <td style="color:var(--text-muted)">${d.id}</td>
+      <td style="color:var(--text-muted)">${d.vehicle||'—'}</td>
+      <td><span class="tag ${d.active?'approved':'draft'}">${d.active?'在籍中':'退職'}</span></td>
+      <td>
+        <button class="btn-sm ${d.active?'del':'edit'}" onclick="${d.active?'openDeleteModal(\''+d.id+'\')':'reactivateDriver(\''+d.id+'\')'}">${d.active?'退職処理':'復帰'}</button>
+      </td>
+    </tr>`).join('');
+
+  document.getElementById('driverTable').innerHTML = `
+    <table class="driver-table">
+      <thead><tr><th>氏名</th><th>社員番号</th><th>担当車両</th><th>状態</th><th>操作</th></tr></thead>
+      <tbody>${tbody||'<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px">乗務員がいません</td></tr>'}</tbody>
+    </table>`;
+}
+
+function addDriver() {
+  const name = document.getElementById('new-drv-name').value.trim();
+  if (!name) { alert('氏名を入力してください'); return; }
+  const id = 'D'+String(Date.now()).slice(-4);
+  appState.drivers.push({
+    id, name,
+    vehicle: document.getElementById('new-drv-veh').value.trim(),
+    active: true
+  });
+  save();
+  document.getElementById('new-drv-name').value='';
+  document.getElementById('new-drv-id').value='';
+  document.getElementById('new-drv-veh').value='';
+  renderDriverPanel();
+}
+
+function openDeleteModal(id) {
+  appState.deleteDriverId = id;
+  document.getElementById('deleteModal').classList.add('open');
+}
+
+function confirmDeleteDriver() {
+  const d = appState.drivers.find(x=>x.id===appState.deleteDriverId);
+  if (d) { d.active = false; save(); renderDriverPanel(); }
+  closeModal('deleteModal');
+}
+
+function reactivateDriver(id) {
+  const d = appState.drivers.find(x=>x.id===id);
+  if (d) { d.active=true; save(); renderDriverPanel(); }
+}
+
+// KPI
+function renderKpi() {
+  const total = appState.reports.length;
+  const avgInputMin = 5; // after digitization
+  const beforeMin = 30; // before
+  const savedMin = total * (beforeMin - avgInputMin);
+  const savedH = Math.round(savedMin/60*10)/10;
+  const savedCost = Math.round(savedMin/60 * 2200); // 2200円/時
+
+  document.getElementById('kpiContent').innerHTML = `
+    <div class="stats">
+      <div class="stat-card"><div class="stat-label">電子化日報数</div><div class="stat-value">${total}</div></div>
+      <div class="stat-card"><div class="stat-label">削減時間（推計）</div><div class="stat-value">${savedH}</div><div class="stat-unit">時間</div></div>
+      <div class="stat-card"><div class="stat-label">削減人件費（推計）</div><div class="stat-value">${Math.round(savedCost/1000)}</div><div class="stat-unit">千円</div></div>
+      <div class="stat-card"><div class="stat-label">平均入力時間</div><div class="stat-value">${avgInputMin}</div><div class="stat-unit">分/件</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📈 省力化効果（補助金KPI）</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:var(--blue-pale)">
+          <th style="padding:8px;text-align:left;color:var(--blue);font-weight:700">指標</th>
+          <th style="padding:8px;text-align:center;color:var(--blue);font-weight:700">導入前</th>
+          <th style="padding:8px;text-align:center;color:var(--blue);font-weight:700">導入後</th>
+          <th style="padding:8px;text-align:center;color:var(--blue);font-weight:700">削減率</th>
+        </tr></thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--blue-soft)">
+            <td style="padding:8px">日報入力時間（1件あたり）</td>
+            <td style="padding:8px;text-align:center">30分</td>
+            <td style="padding:8px;text-align:center">${avgInputMin}分</td>
+            <td style="padding:8px;text-align:center;font-weight:700;color:var(--green)">${Math.round((1-avgInputMin/30)*100)}%削減</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--blue-soft)">
+            <td style="padding:8px">転記ミス（月次）</td>
+            <td style="padding:8px;text-align:center">数十件</td>
+            <td style="padding:8px;text-align:center">0件（自動）</td>
+            <td style="padding:8px;text-align:center;font-weight:700;color:var(--green)">100%削減</td>
+          </tr>
+          <tr>
+            <td style="padding:8px">経理転記時間（月次）</td>
+            <td style="padding:8px;text-align:center">80時間</td>
+            <td style="padding:8px;text-align:center">—（実装予定）</td>
+            <td style="padding:8px;text-align:center;color:var(--text-muted)">計測中</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;font-size:12px;color:var(--text-muted)">※推計値は時給2,200円で計算。補助金効果報告は年5回（2026〜2031年）提出予定。</div>
+    </div>`;
+}
+
+// Modal
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ═══════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════
+initDriver();
+</script>
+</body>
+</html>
