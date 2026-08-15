@@ -172,9 +172,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','N
 .report-list{display:flex;flex-direction:column;gap:10px}
 .report-item{background:var(--white);border:2px solid var(--blue-soft);border-radius:var(--r);padding:16px;box-shadow:var(--sh);cursor:pointer;transition:all .15s}
 .report-item:hover{border-color:var(--blue-mid);box-shadow:var(--sh-md)}
-.report-item.submitted .ri-status{background:#fef3c7;color:#92400e;border-color:#fcd34d}
-.report-item.approved .ri-status{background:var(--green-pale);color:#065f46;border-color:#6ee7b7}
-.report-item.rejected .ri-status{background:var(--red-pale);color:#7f1d1d;border-color:#fca5a5}
+.report-item.open .ri-status{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+.report-item.done .ri-status{background:var(--green-pale);color:#065f46;border-color:#6ee7b7}
 .ri-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .ri-name{font-weight:700;font-size:15px}
 .ri-date{font-size:12px;color:var(--text-muted)}
@@ -215,10 +214,50 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','N
 
 /* Tags */
 .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px}
-.tag.pending{background:#fef3c7;color:#92400e}
+.tag.open{background:#fef3c7;color:#92400e}
+.tag.done{background:var(--green-pale);color:#065f46}
 .tag.approved{background:var(--green-pale);color:#065f46}
-.tag.rejected{background:var(--red-pale);color:#7f1d1d}
 .tag.draft{background:#f1f5f9;color:#64748b}
+
+/* Receipt photo */
+.receipt-drop{border:2.5px dashed var(--blue-mid);border-radius:var(--r-sm);background:var(--blue-pale);padding:14px;text-align:center;cursor:pointer;color:var(--blue);font-size:13px;font-weight:700;transition:all .15s}
+.receipt-drop:hover{border-color:var(--blue);background:var(--blue-soft)}
+.receipt-thumb{max-width:160px;max-height:160px;border-radius:8px;border:2px solid var(--blue-soft);display:block;margin:8px auto 0;cursor:pointer}
+
+/* Custom calendar */
+.cal-modal .modal{max-width:360px;padding:18px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-title{font-size:16px;font-weight:800;color:var(--text)}
+.cal-nav{width:40px;height:40px;border:2px solid var(--blue-soft);border-radius:10px;background:var(--white);cursor:pointer;font-size:16px;color:var(--blue);font-weight:700}
+.cal-nav:hover{background:var(--blue-pale);border-color:var(--blue-mid)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow{text-align:center;font-size:11px;font-weight:700;color:var(--text-muted);padding:4px 0}
+.cal-dow.sun{color:var(--red)}.cal-dow.sat{color:var(--blue)}
+.cal-day{aspect-ratio:1;border:none;border-radius:10px;background:var(--bg);cursor:pointer;font-size:15px;font-weight:600;font-family:inherit;color:var(--text);transition:all .1s}
+.cal-day:hover{background:var(--blue-soft)}
+.cal-day.other{opacity:.3}
+.cal-day.today{box-shadow:inset 0 0 0 2px var(--blue-mid)}
+.cal-day.sel{background:var(--blue);color:#fff;font-weight:800}
+.cal-quick{display:flex;gap:8px;margin-top:12px}
+.cal-quick button{flex:1;padding:10px;border:2px solid var(--blue-soft);border-radius:var(--r-sm);background:var(--white);cursor:pointer;font-size:13px;font-weight:700;color:var(--blue);font-family:inherit}
+.cal-quick button:hover{background:var(--blue-pale)}
+.date-display{cursor:pointer;background:var(--bg)}
+
+/* Folder panel */
+.folder-item{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--white);border:2px solid var(--blue-soft);border-radius:var(--r);margin-bottom:8px;cursor:pointer;transition:all .12s}
+.folder-item:hover{border-color:var(--blue-mid)}
+.folder-item.sel{border-color:var(--blue);background:var(--blue-pale)}
+.folder-name{font-weight:700;font-size:14px;flex:1}
+.folder-count{font-size:12px;color:var(--text-muted);background:var(--blue-pale);padding:2px 10px;border-radius:10px;font-weight:700}
+
+/* OCR panel */
+.ocr-preview{max-width:100%;border-radius:var(--r);border:2px solid var(--blue-soft);display:block;margin-top:10px}
+.ocr-status{padding:12px;border-radius:var(--r-sm);font-size:13px;font-weight:600;margin-top:12px;display:none}
+.ocr-status.info{display:block;background:var(--blue-pale);color:var(--blue)}
+.ocr-status.err{display:block;background:var(--red-pale);color:var(--red)}
+.ocr-status.ok{display:block;background:var(--green-pale);color:#065f46}
+.ocr-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:900px){.ocr-grid{grid-template-columns:1fr}}
 
 /* Modal */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;padding:20px}
@@ -312,7 +351,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','N
   <div class="done">
     <div class="done-icon">✓</div>
     <h2>送信完了！</h2>
-    <p class="sub">日報が送信されました。管理者の承認をお待ちください。</p>
+    <p class="sub">日報が送信されました。お疲れさまでした。</p>
     <div class="sum-box" id="sumBox"></div>
     <button class="btn-primary" style="max-width:280px;margin:0 auto 0;display:block" onclick="resetDriver()">新しい日報を作成する</button>
   </div>
@@ -367,9 +406,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','N
   <div class="admin-sidebar">
     <div class="sidebar-title">MENU</div>
     <div class="sidebar-item on" data-panel="dash" onclick="switchPanel('dash')"><span class="ico">📊</span>ダッシュボード</div>
-    <div class="sidebar-item" data-panel="approval" onclick="switchPanel('approval')"><span class="ico">✅</span>承認管理 <span id="badge-approval" style="margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px"></span></div>
-    <div class="sidebar-item" data-panel="records" onclick="switchPanel('records')"><span class="ico">📋</span>配送記録</div>
+    <div class="sidebar-item" data-panel="approval" onclick="switchPanel('approval')"><span class="ico">📋</span>日報管理 <span id="badge-approval" style="margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px"></span></div>
+    <div class="sidebar-item" data-panel="folders" onclick="switchPanel('folders')"><span class="ico">📁</span>フォルダ管理</div>
+    <div class="sidebar-item" data-panel="records" onclick="switchPanel('records')"><span class="ico">📒</span>配送記録</div>
     <div class="sidebar-item" data-panel="drivers" onclick="switchPanel('drivers')"><span class="ico">👤</span>乗務員管理</div>
+    <div class="sidebar-item" data-panel="vehicles" onclick="switchPanel('vehicles')"><span class="ico">🚗</span>車両管理</div>
+    <div class="sidebar-item" data-panel="ocr" onclick="switchPanel('ocr')"><span class="ico">📷</span>OCR取込</div>
     <div class="sidebar-title" style="margin-top:16px">REPORT</div>
     <div class="sidebar-item" data-panel="kpi" onclick="switchPanel('kpi')"><span class="ico">📈</span>省力化KPI</div>
   </div>
@@ -387,10 +429,74 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','N
       </div>
     </div>
 
-    <!-- Approval -->
+    <!-- Reports (未対応/対応済み) -->
     <div class="admin-panel" id="panel-approval">
       <div id="approvalList"></div>
       <div id="approvalDetail" style="display:none"></div>
+    </div>
+
+    <!-- Folders -->
+    <div class="admin-panel" id="panel-folders">
+      <div class="sec-title">フォルダ管理</div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">➕ フォルダの作成</div>
+        <div class="row2">
+          <div class="field"><label>フォルダ名</label><input type="text" id="new-folder-name" placeholder="例：2026年8月分 / 日通提出用"></div>
+          <div class="field" style="display:flex;align-items:flex-end"><button class="btn-primary" style="width:auto;padding:10px 24px" onclick="addFolder()">作成する</button></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">📁 フォルダ一覧</div>
+        <div id="folderList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" id="folderReportsTitle">📄 日報</div>
+        <div id="folderReports"></div>
+      </div>
+    </div>
+
+    <!-- Vehicles -->
+    <div class="admin-panel" id="panel-vehicles">
+      <div class="sec-title">車両管理（車両番号と車種の紐づけ）</div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">➕ 車両の追加</div>
+        <div class="row3">
+          <div class="field"><label>車両番号 <span class="req">必須</span></label><input type="text" id="new-veh-no" placeholder="例：江東100あ887"></div>
+          <div class="field"><label>車種</label><select id="new-veh-type"></select></div>
+          <div class="field" style="display:flex;align-items:flex-end"><button class="btn-primary" style="width:auto;padding:10px 24px" onclick="addVehicle()">追加する</button></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted)">※ ドライバー画面で車両番号を入力すると、ここで登録した車種が自動でセットされます（車両番号は手打ちでも入力できます）。</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🚗 車両一覧</div>
+        <div id="vehicleTable"></div>
+      </div>
+    </div>
+
+    <!-- OCR -->
+    <div class="admin-panel" id="panel-ocr">
+      <div class="sec-title">手書き日報のOCR取込</div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">🔑 AI読み取り設定</div>
+        <div class="field"><label>Anthropic APIキー（この端末のブラウザにのみ保存されます）</label>
+          <input type="password" id="ocr-api-key" placeholder="sk-ant-..." onchange="saveApiKey(this.value)"></div>
+        <div style="font-size:12px;color:var(--text-muted)">手書き日報の写真をAI（Claude）で読み取り、日報データに変換します。APIキーは <a href="https://platform.claude.com/" target="_blank" rel="noopener">Claude Platform</a> で発行できます。</div>
+      </div>
+      <div class="ocr-grid">
+        <div class="card">
+          <div class="card-title">📷 手書き日報の写真</div>
+          <div class="receipt-drop" onclick="document.getElementById('ocr-file').click()">📁 写真を選択（またはカメラで撮影）</div>
+          <input type="file" id="ocr-file" accept="image/*" style="display:none" onchange="handleOcrImage(this)">
+          <img id="ocr-preview" class="ocr-preview" style="display:none" alt="手書き日報">
+          <button class="btn-primary" id="ocr-run-btn" style="margin-top:12px;display:none" onclick="runOcr()">🤖 AIで読み取る</button>
+          <div class="ocr-status" id="ocr-status"></div>
+        </div>
+        <div class="card" id="ocr-result-card" style="display:none">
+          <div class="card-title">✏ 読み取り結果の確認・修正</div>
+          <div id="ocr-form"></div>
+          <button class="btn-primary" style="margin-top:12px" onclick="saveOcrReport()">💾 日報として保存する</button>
+        </div>
+      </div>
     </div>
 
     <!-- Records -->
@@ -436,14 +542,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','N
 </div>
 </div><!-- /page-admin -->
 
-<!-- Reject modal -->
-<div class="modal-bg" id="rejectModal">
+<!-- Calendar modal -->
+<div class="modal-bg cal-modal" id="calModal">
   <div class="modal">
-    <h3>📝 差し戻しコメント</h3>
-    <div class="field"><label>差し戻し理由・修正依頼内容</label><textarea id="rejectComment" placeholder="例：メーター値が前日と一致していません。ご確認ください。" style="min-height:100px"></textarea></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('rejectModal')">キャンセル</button>
-      <button class="btn-confirm" onclick="confirmReject()">差し戻す</button>
+    <div class="cal-head">
+      <button class="cal-nav" onclick="calMove(-1)">‹</button>
+      <span class="cal-title" id="calTitle"></span>
+      <button class="cal-nav" onclick="calMove(1)">›</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-quick">
+      <button onclick="calPickToday(-1)">昨日</button>
+      <button onclick="calPickToday(0)">今日</button>
+      <button onclick="closeModal('calModal')">閉じる</button>
     </div>
   </div>
 </div>
@@ -473,6 +584,7 @@ const COMPANIES = [
   {id:'musashi',name:'武蔵貨物',sub:'業務日報',icon:'🟤'},
 ];
 const STEPS = ['会社選択','基本情報','作業記録','費用・備考','完了'];
+const VTYPES = ['2t車','4t車（平ボディ）','4t車（ウイング）','大型車','ゲート付き','その他'];
 
 let appState = {
   step: 0,
@@ -484,15 +596,39 @@ let appState = {
     {id:'D002',name:'佐藤 次郎',vehicle:'江東100い234',active:true},
     {id:'D003',name:'鈴木 三郎',vehicle:'江東100う567',active:true},
   ])),
+  vehicles: JSON.parse(localStorage.getItem('drs_vehicles')||JSON.stringify([
+    {no:'江東100あ887',vtype:'2t車'},
+    {no:'江東100い234',vtype:'4t車（平ボディ）'},
+    {no:'江東100う567',vtype:'4t車（ウイング）'},
+  ])),
+  folders: JSON.parse(localStorage.getItem('drs_folders')||'[]'),
   adminLoggedIn: false,
   currentPanel: 'dash',
-  rejectTargetId: null,
   deleteDriverId: null,
+  selectedFolderId: 'all',
+  _receipt: null,
+  _ocrImage: null,
+  _ocrData: null,
+  _calTarget: null,
+  _calYm: null,
 };
+
+// v6移行: 旧ステータス(submitted/approved/rejected)→未対応(open)/対応済み(done)
+(function migrateReports(){
+  let changed = false;
+  appState.reports.forEach(r=>{
+    if (r.status==='submitted'||r.status==='rejected') { r.status='open'; changed=true; }
+    else if (r.status==='approved') { r.status='done'; changed=true; }
+    if (r.folderId===undefined) { r.folderId=null; changed=true; }
+  });
+  if (changed) localStorage.setItem('drs_reports', JSON.stringify(appState.reports));
+})();
 
 function save() {
   localStorage.setItem('drs_reports', JSON.stringify(appState.reports));
   localStorage.setItem('drs_drivers', JSON.stringify(appState.drivers));
+  localStorage.setItem('drs_vehicles', JSON.stringify(appState.vehicles));
+  localStorage.setItem('drs_folders', JSON.stringify(appState.folders));
 }
 
 // ═══════════════════════════════════════
@@ -589,6 +725,7 @@ function buildS1() {
 
   let html = `<div class="info-badge">${co.icon} ${co.name} の日報を作成中</div>`;
 
+  const vehOpts = appState.vehicles.map(v=>`<option value="${v.no}">`).join('');
   html += `<div class="card">
     <div class="card-title">👤 乗務員・車両情報</div>
     <div class="row2">
@@ -597,17 +734,17 @@ function buildS1() {
           <option value="">選択してください</option>${driverOpts}
         </select></div>
       <div class="field"><label>作業日 <span class="req">必須</span></label>
-        <input type="date" id="f_date" value="${today()}"></div>
+        <input type="text" class="date-display" id="f_date_disp" readonly value="${fmtDateJa(today())}" onclick="openCalendar('f_date')">
+        <input type="hidden" id="f_date" value="${today()}"></div>
     </div>
     <div class="row2">
       <div class="field"><label>車両番号 <span class="req">必須</span></label>
-        <input type="text" id="f_veh" placeholder="例：江東100あ887"></div>
+        <input type="text" id="f_veh" list="vehMasterList" placeholder="例：江東100あ887" oninput="onVehInput(this)">
+        <datalist id="vehMasterList">${vehOpts}</datalist></div>
       <div class="field"><label>車種</label>
         <select id="f_vt">
           <option value="">選択してください</option>
-          <option>2t車</option><option>4t車（平ボディ）</option>
-          <option>4t車（ウイング）</option><option>大型車</option>
-          <option>ゲート付き</option><option>その他</option>
+          ${VTYPES.map(t=>`<option>${t}</option>`).join('')}
         </select></div>
     </div>
   </div>`;
@@ -626,14 +763,6 @@ function buildS1() {
   </div>`;
 
   // Company-specific
-  if (appState.selectedCo==='nittsu') {
-    html += `<div class="card"><div class="card-title">📋 管理情報</div>
-      <div class="row3">
-        <div class="field"><label>管理課所コード</label><input type="text" id="f_dcode" placeholder="486"></div>
-        <div class="field"><label>請負階層</label><select id="f_tier"><option value="1">1次</option><option value="2">2次</option><option value="3">3次</option></select></div>
-        <div class="field"><label>上乗手①</label><input type="text" id="f_sub1" placeholder="氏名（任意）"></div>
-      </div></div>`;
-  }
   if (appState.selectedCo==='seiko') {
     html += `<div class="card"><div class="card-title">🚛 車両・商品情報</div>
       <div class="row3">
@@ -667,10 +796,6 @@ function buildS1() {
       <div class="row2">
         <div class="field"><label>実キロ（km）</label><input type="number" id="f_real_km" placeholder="0"></div>
         <div class="field"><label>最遠距離（km）</label><input type="number" id="f_max_km" placeholder="0"></div>
-      </div>
-      <div class="row2">
-        <div class="field"><label>ガソリン（L）</label><input type="number" id="f_gas_meitetsu" step="0.1" placeholder="0.0"></div>
-        <div class="field"><label>報償費（円）</label><input type="number" id="f_reward" placeholder="0"></div>
       </div></div>`;
   }
   if (appState.selectedCo==='musashi') {
@@ -695,7 +820,74 @@ function buildS1() {
 function onDriverChange(sel) {
   const opt = sel.options[sel.selectedIndex];
   const veh = opt.dataset.veh || '';
-  document.getElementById('f_veh').value = veh;
+  const el = document.getElementById('f_veh');
+  el.value = veh;
+  onVehInput(el);
+}
+
+// 車両番号（手打ち可）→ 車両マスタに一致すれば車種を自動セット
+function onVehInput(el) {
+  const v = appState.vehicles.find(x=>x.no===el.value.trim());
+  if (v && v.vtype) {
+    const vt = document.getElementById('f_vt');
+    if (vt) vt.value = v.vtype;
+  }
+}
+
+// ─── 日付カレンダー ───
+const fmtDateJa = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso+'T00:00:00');
+  const days=['日','月','火','水','木','金','土'];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${days[d.getDay()]}）`;
+};
+
+function openCalendar(targetId) {
+  appState._calTarget = targetId;
+  const cur = document.getElementById(targetId)?.value || today();
+  appState._calYm = cur.slice(0,7);
+  renderCalendar();
+  document.getElementById('calModal').classList.add('open');
+}
+
+function calMove(dir) {
+  const [y,m] = appState._calYm.split('-').map(Number);
+  const d = new Date(y, m-1+dir, 1);
+  appState._calYm = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const [y,m] = appState._calYm.split('-').map(Number);
+  document.getElementById('calTitle').textContent = `${y}年 ${m}月`;
+  const sel = document.getElementById(appState._calTarget)?.value || '';
+  const todayIso = today();
+  const first = new Date(y, m-1, 1);
+  const start = new Date(first); start.setDate(1-first.getDay());
+  let html = ['日','月','火','水','木','金','土'].map((d,i)=>`<div class="cal-dow ${i===0?'sun':i===6?'sat':''}">${d}</div>`).join('');
+  const d = new Date(start);
+  for (let i=0;i<42;i++) {
+    const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const cls = ['cal-day', d.getMonth()!==m-1?'other':'', iso===todayIso?'today':'', iso===sel?'sel':''].filter(Boolean).join(' ');
+    html += `<button class="${cls}" onclick="calPick('${iso}')">${d.getDate()}</button>`;
+    d.setDate(d.getDate()+1);
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function calPick(iso) {
+  const t = document.getElementById(appState._calTarget);
+  if (t) {
+    t.value = iso;
+    const disp = document.getElementById(appState._calTarget+'_disp');
+    if (disp) disp.value = fmtDateJa(iso);
+  }
+  closeModal('calModal');
+}
+
+function calPickToday(offset) {
+  const d = new Date(); d.setDate(d.getDate()+offset);
+  calPick(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
 }
 
 function buildOdoSection() {
@@ -781,6 +973,7 @@ function buildS2() {
     html += `<div class="dest-card"><span class="dest-label">配送先 ${d.label}</span>${rmBtn}`;
 
     if (co==='nittsu') {
+      // 詳細入力は日通選択時のみ
       html += `
         <div class="row2">
           <div class="field"><label>発地</label>
@@ -796,62 +989,15 @@ function buildS2() {
         </div>
         <div class="field"><label>着時刻</label>
           <input type="time" data-di="${i}" data-dk="time" value="${d.time||''}" oninput="updDest(this)"></div>`;
-    } else if (co==='seiko') {
+    } else {
+      // 日通以外は簡易入力（配送先名＋着時刻のみ）
       html += `
         <div class="row2">
-          <div class="field"><label>発地</label>
-            <input type="text" data-di="${i}" data-dk="from" value="${d.from||''}" placeholder="発地" oninput="updDest(this)"></div>
-          <div class="field"><label>着地</label>
-            <input type="text" data-di="${i}" data-dk="name" value="${d.name||''}" placeholder="着地" oninput="updDest(this)"></div>
-        </div>
-        <div class="field"><label>着時刻</label>
-          <input type="time" data-di="${i}" data-dk="time" value="${d.time||''}" oninput="updDest(this)"></div>`;
-    } else if (co==='johoku') {
-      html += `
-        <div class="row2">
-          <div class="field"><label>積地</label>
-            <input type="text" data-di="${i}" data-dk="from" value="${d.from||''}" placeholder="例：江東区倉庫" oninput="updDest(this)"></div>
-          <div class="field"><label>卸地</label>
-            <input type="text" data-di="${i}" data-dk="name" value="${d.name||''}" placeholder="例：品川区" oninput="updDest(this)"></div>
-        </div>
-        <div class="row2">
-          <div class="field"><label>積載物</label>
-            <input type="text" data-di="${i}" data-dk="items" value="${d.items||''}" placeholder="例：食品" oninput="updDest(this)"></div>
-          <div class="field"><label>着時間</label>
-            <input type="time" data-di="${i}" data-dk="time" value="${d.time||''}" oninput="updDest(this)"></div>
-        </div>`;
-    } else if (co==='meitetsu') {
-      html += `
-        <div class="row2">
-          <div class="field"><label>発着時刻</label>
-            <input type="time" data-di="${i}" data-dk="time" value="${d.time||''}" oninput="updDest(this)"></div>
-          <div class="field"><label>荷主名・内容</label>
-            <input type="text" data-di="${i}" data-dk="items" value="${d.items||d.client||''}" placeholder="荷主名" oninput="updDest(this)"></div>
-        </div>`;
-    } else if (co==='musashi') {
-      html += `
-        <div class="row2">
-          <div class="field"><label>荷主名</label>
-            <input type="text" data-di="${i}" data-dk="name" value="${d.name||''}" placeholder="荷主名" oninput="updDest(this)"></div>
-          <div class="field"><label>荷物内容</label>
-            <input type="text" data-di="${i}" data-dk="items" value="${d.items||''}" placeholder="例：食品" oninput="updDest(this)"></div>
-        </div>
-        <div class="row2">
-          <div class="field"><label>積載数</label>
-            <input type="number" data-di="${i}" data-dk="count" value="${d.count||''}" placeholder="0" oninput="updDest(this)" inputmode="numeric"></div>
+          <div class="field"><label>配送先名</label>
+            <input type="text" data-di="${i}" data-dk="name" value="${d.name||''}" placeholder="例：品川区 ○○倉庫" oninput="updDest(this)"></div>
           <div class="field"><label>着時刻</label>
             <input type="time" data-di="${i}" data-dk="time" value="${d.time||''}" oninput="updDest(this)"></div>
         </div>`;
-    } else { // isis
-      html += `
-        <div class="row2">
-          <div class="field"><label>着地</label>
-            <input type="text" data-di="${i}" data-dk="name" value="${d.name||''}" placeholder="例：クロスカルチャーセンター" oninput="updDest(this)"></div>
-          <div class="field"><label>着時刻</label>
-            <input type="time" data-di="${i}" data-dk="time" value="${d.time||''}" oninput="updDest(this)"></div>
-        </div>
-        <div class="field"><label>備考</label>
-          <input type="text" data-di="${i}" data-dk="items" value="${d.items||''}" placeholder="メモ" oninput="updDest(this)"></div>`;
     }
 
     html += `</div>`;
@@ -876,30 +1022,23 @@ function removeDest(i) {
 
 // ── Step 3: Expenses ──
 function buildS3() {
-  const co = appState.selectedCo;
-  let extra = '';
-  if (co==='seiko'||co==='nittsu') {
-    extra = `<div class="row2">
-      <div class="field"><label>基本料金（円）</label><input type="number" id="f_base" placeholder="0" inputmode="numeric"></div>
-      <div class="field"><label>待機料（円）</label><input type="number" id="f_wait" placeholder="0" inputmode="numeric"></div>
-    </div>
-    <div class="row2">
-      <div class="field"><label>時間割増（円）</label><input type="number" id="f_ot" placeholder="0" inputmode="numeric"></div>
-      <div class="field"><label>助手料金（円）</label><input type="number" id="f_hlp" placeholder="0" inputmode="numeric"></div>
-    </div>`;
-  }
+  appState._receipt = null;
   document.getElementById('s3content').innerHTML = `
     <div class="card">
       <div class="card-title">💴 費用</div>
-      <div class="row3">
+      <div class="row2">
         <div class="field"><label>有料道路代（円）</label><input type="number" id="f_toll" placeholder="0" inputmode="numeric"></div>
         <div class="field"><label>駐車料金（円）</label><input type="number" id="f_park" placeholder="0" inputmode="numeric"></div>
-        <div class="field"><label>ガソリン代（円）</label><input type="number" id="f_gas" placeholder="0" inputmode="numeric"></div>
       </div>
-      <div class="row2" style="margin-top:4px">
-        <div class="field"><label>給油量（L）</label><input type="number" id="f_gas_l" placeholder="0.0" step="0.1" inputmode="decimal"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⛽ 給油</div>
+      <div class="field"><label>給油量（L）</label><input type="number" id="f_gas_l" placeholder="0.0" step="0.1" inputmode="decimal"></div>
+      <div class="field"><label>領収書の写真（任意）</label>
+        <div class="receipt-drop" onclick="document.getElementById('f_receipt').click()">📷 領収書を撮影・添付する</div>
+        <input type="file" id="f_receipt" accept="image/*" capture="environment" style="display:none" onchange="handleReceipt(this)">
+        <img id="receiptPreview" class="receipt-thumb" style="display:none" alt="領収書">
       </div>
-      ${extra}
     </div>
     <div class="card">
       <div class="card-title">📝 報告・特記事項</div>
@@ -908,6 +1047,42 @@ function buildS3() {
       <div class="field"><label>その他備考</label>
         <textarea id="f_note" placeholder="例：荷物の状態、遅延理由等"></textarea></div>
     </div>`;
+}
+
+// 画像をリサイズ・圧縮してdataURL化（localStorage節約のため）
+function compressImage(file, maxPx, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let {width:w, height:h} = img;
+        const scale = Math.min(1, maxPx/Math.max(w,h));
+        w = Math.round(w*scale); h = Math.round(h*scale);
+        const cv = document.createElement('canvas');
+        cv.width=w; cv.height=h;
+        cv.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(cv.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleReceipt(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  try {
+    appState._receipt = await compressImage(file, 1000, 0.7);
+    const img = document.getElementById('receiptPreview');
+    img.src = appState._receipt;
+    img.style.display = 'block';
+  } catch(e) {
+    alert('画像の読み込みに失敗しました');
+  }
 }
 
 // ── Submit ──
@@ -939,13 +1114,13 @@ function submitReport() {
     destinations: appState.destinations.map((d,i)=>({...d, odo: destOdos[i]})),
     toll: parseInt(document.getElementById('f_toll')?.value)||0,
     parking: parseInt(document.getElementById('f_park')?.value)||0,
-    gas_fee: parseInt(document.getElementById('f_gas')?.value)||0,
     gas_vol: parseFloat(document.getElementById('f_gas_l')?.value)||0,
+    gas_receipt: appState._receipt||null,
     incident: document.getElementById('f_inc')?.value||'',
     notes: document.getElementById('f_note')?.value||'',
-    status: 'submitted',
+    status: 'open',
+    folderId: null,
     submitted_at: new Date().toISOString(),
-    approved_at: null, approved_by: null, reject_comment: null,
     input_minutes: 5, // record actual input time (PoC: fixed)
   };
   appState.reports.push(report);
@@ -954,12 +1129,12 @@ function submitReport() {
   // Summary
   document.getElementById('sumBox').innerHTML = [
     ['元請け会社', co.icon+' '+co.name],
-    ['乗務員', drvName], ['作業日', dt],
+    ['乗務員', drvName], ['作業日', fmtDateJa(dt)],
     ['車両番号', report.vehicle||'—'],
     ['走行距離', report.distance ? report.distance+' km' : '—'],
     ['配送件数', appState.destinations.length+' 件'],
     ['有料道路代', report.toll.toLocaleString()+' 円'],
-    ['ガソリン代', report.gas_fee.toLocaleString()+' 円'],
+    ['給油量', report.gas_vol ? report.gas_vol+' L'+(report.gas_receipt?'（領収書あり）':'') : '—'],
     ['提出日時', new Date().toLocaleString('ja-JP')],
   ].map(([k,v])=>`<div class="sum-row"><span class="sum-k">${k}</span><span class="sum-v">${v}</span></div>`).join('');
 
@@ -975,6 +1150,9 @@ function renderAdmin() {
   updateBadge();
   renderDash();
   renderDriverPanel();
+  renderVehiclePanel();
+  renderFolderPanel();
+  renderOcrPanel();
   renderApprovalList();
   renderRecords();
   renderKpi();
@@ -990,14 +1168,14 @@ function renderAdmin() {
 }
 
 function updateBadge() {
-  const pending = appState.reports.filter(r=>r.status==='submitted').length;
+  const open = appState.reports.filter(r=>r.status==='open').length;
   const b = document.getElementById('badge-approval');
-  if (b) b.textContent = pending > 0 ? pending : '';
+  if (b) b.textContent = open > 0 ? open : '';
 }
 
 function initAdminTabs() {
-  const panels = ['dash','approval','records','drivers','kpi'];
-  const labels = ['📊 ダッシュ','✅ 承認','📋 記録','👤 乗務員','📈 KPI'];
+  const panels = ['dash','approval','folders','records','drivers','vehicles','ocr','kpi'];
+  const labels = ['📊 ダッシュ','📋 日報','📁 フォルダ','📒 記録','👤 乗務員','🚗 車両','📷 OCR','📈 KPI'];
   const tabs = document.getElementById('adminTabs');
   if (!tabs) return;
   tabs.innerHTML = panels.map((p,i)=>`
@@ -1021,16 +1199,15 @@ function switchPanel(id) {
 // Dashboard
 function renderDash() {
   const reports = appState.reports;
-  const pending = reports.filter(r=>r.status==='submitted').length;
-  const approved = reports.filter(r=>r.status==='approved').length;
+  const open = reports.filter(r=>r.status==='open').length;
   const totalDist = reports.reduce((a,r)=>a+(r.distance||0),0);
-  const totalGas = reports.reduce((a,r)=>a+(r.gas_fee||0),0);
+  const totalGasVol = reports.reduce((a,r)=>a+(r.gas_vol||0),0);
 
   document.getElementById('dashStats').innerHTML = `
     <div class="stat-card"><div class="stat-label">総日報件数</div><div class="stat-value">${reports.length}</div></div>
-    <div class="stat-card"><div class="stat-label">承認待ち</div><div class="stat-value" style="color:var(--amber)">${pending}</div></div>
+    <div class="stat-card"><div class="stat-label">未対応</div><div class="stat-value" style="color:var(--amber)">${open}</div></div>
     <div class="stat-card"><div class="stat-label">総走行距離</div><div class="stat-value">${totalDist.toLocaleString()}</div><div class="stat-unit">km</div></div>
-    <div class="stat-card"><div class="stat-label">ガソリン代合計</div><div class="stat-value">${Math.round(totalGas/1000)}</div><div class="stat-unit">千円</div></div>`;
+    <div class="stat-card"><div class="stat-label">給油量合計</div><div class="stat-value">${Math.round(totalGasVol*10)/10}</div><div class="stat-unit">L</div></div>`;
 
   const recent = [...reports].sort((a,b)=>new Date(b.submitted_at)-new Date(a.submitted_at)).slice(0,5);
   document.getElementById('dashRecent').innerHTML = recent.length
@@ -1038,41 +1215,44 @@ function renderDash() {
     : '<div style="text-align:center;padding:32px;color:var(--text-muted)">日報データがありません</div>';
 }
 
+const STATUS_LABEL = {open:'未対応', done:'対応済み'};
+
 function reportItemHTML(r) {
-  const statusLabel = {submitted:'承認待ち',approved:'承認済み',rejected:'差し戻し',draft:'下書き'}[r.status]||r.status;
+  const statusLabel = STATUS_LABEL[r.status]||r.status;
+  const folder = appState.folders.find(f=>f.id===r.folderId);
   return `<div class="report-item ${r.status}" onclick="openDetail('${r.id}')">
     <div class="ri-top">
       <span class="ri-name">${r.driverName}</span>
       <span class="ri-date">${r.date}</span>
       <span class="ri-co">${r.company}</span>
+      ${folder?`<span class="ri-co">📁 ${folder.name}</span>`:''}
+      ${r.ocr?'<span class="ri-co">📷 OCR</span>':''}
       <span class="ri-status">${statusLabel}</span>
     </div>
-    <div class="ri-sub">${r.vehicle||'車両未入力'} ／ 配送${r.destinations.length}件 ／ ${r.distance?r.distance+'km':'距離未入力'} ／ 道路代${r.toll.toLocaleString()}円 ／ ガソリン${r.gas_fee.toLocaleString()}円</div>
+    <div class="ri-sub">${r.vehicle||'車両未入力'} ／ 配送${r.destinations.length}件 ／ ${r.distance?r.distance+'km':'距離未入力'} ／ 道路代${(r.toll||0).toLocaleString()}円 ／ 給油${r.gas_vol||0}L</div>
   </div>`;
 }
 
-// Approval
-function renderApprovalList(filter='') {
+// ─── 日報管理（未対応/対応済み） ───
+function renderApprovalList(filter='open') {
   const reports = [...appState.reports]
-    .filter(r => r.status==='submitted' || r.status==='approved' || r.status==='rejected')
-    .sort((a,b)=>{
-      const order={submitted:0,rejected:1,approved:2};
-      return (order[a.status]||3)-(order[b.status]||3) || new Date(b.submitted_at)-new Date(a.submitted_at);
-    });
+    .filter(r=>!filter||r.status===filter)
+    .sort((a,b)=>new Date(b.submitted_at)-new Date(a.submitted_at));
+  const openCount = appState.reports.filter(r=>r.status==='open').length;
+  const doneCount = appState.reports.filter(r=>r.status==='done').length;
+
+  const tabBtn = (val, label, count) => `
+    <button class="admin-tab ${filter===val?'on':''}" style="display:inline-block" onclick="renderApprovalList('${val}')">${label}（${count}）</button>`;
 
   const html = `
-    <div class="sec-title">承認管理</div>
-    <div class="filter-bar" style="margin-bottom:14px">
-      <div class="field"><label>ステータス</label>
-        <select onchange="renderApprovalList(this.value)" id="approvalFilter">
-          <option value="">全て</option>
-          <option value="submitted" ${filter==='submitted'?'selected':''}>承認待ち</option>
-          <option value="approved" ${filter==='approved'?'selected':''}>承認済み</option>
-          <option value="rejected" ${filter==='rejected'?'selected':''}>差し戻し</option>
-        </select></div>
+    <div class="sec-title">日報管理</div>
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      ${tabBtn('open','⏳ 未対応',openCount)}
+      ${tabBtn('done','✅ 対応済み',doneCount)}
+      ${tabBtn('','📄 全て',appState.reports.length)}
     </div>
     <div class="report-list">
-    ${reports.filter(r=>!filter||r.status===filter).map(r=>reportItemHTML(r)).join('') ||
+    ${reports.map(r=>reportItemHTML(r)).join('') ||
       '<div style="text-align:center;padding:40px;color:var(--text-muted)">該当する日報がありません</div>'}
     </div>`;
   document.getElementById('approvalList').innerHTML = html;
@@ -1085,39 +1265,46 @@ function openDetail(id) {
   if (!r) return;
   switchPanel('approval');
 
-  const statusLabel = {submitted:'承認待ち',approved:'承認済み',rejected:'差し戻し',draft:'下書き'}[r.status];
-  const canApprove = r.status==='submitted';
+  const folderOpts = '<option value="">未分類</option>' +
+    appState.folders.map(f=>`<option value="${f.id}" ${r.folderId===f.id?'selected':''}>${f.name}</option>`).join('');
 
   let destRows = r.destinations.map(d=>`
     <div class="detail-row">
       <span class="detail-k">配送先 ${d.label}</span>
-      <span class="detail-v">${[d.name,d.area,d.time,d.items,d.client,d.from].filter(Boolean).join(' ／ ')||'—'}</span>
+      <span class="detail-v">${[d.from,d.name,d.time,d.items,d.client,d.count?d.count+'件':''].filter(Boolean).join(' ／ ')||'—'}</span>
     </div>`).join('');
+
+  const toggleBtn = r.status==='open'
+    ? `<button class="btn-approve" onclick="toggleStatus('${r.id}')">✓ 対応済みにする</button>`
+    : `<button class="btn-back-list" onclick="toggleStatus('${r.id}')">↩ 未対応に戻す</button>`;
 
   const html = `
     <div class="action-row" style="margin-bottom:14px">
       <button class="btn-back-list" onclick="renderApprovalList()">← 一覧に戻る</button>
-      ${canApprove ? `<button class="btn-approve" onclick="approveReport('${r.id}')">✓ 承認する</button>
-      <button class="btn-reject" onclick="openRejectModal('${r.id}')">✕ 差し戻す</button>` : ''}
-      ${r.status==='approved' ? `<button class="btn-pdf" onclick="printReport('${r.id}')">🖨 PDFで印刷</button>` : ''}
+      ${toggleBtn}
+      <button class="btn-sm edit" style="padding:11px 22px;font-size:14px" onclick="openEdit('${r.id}')">✏ 編集する</button>
+      <button class="btn-pdf" onclick="printReport('${r.id}')">🖨 PDFで印刷</button>
     </div>
     <div class="detail-card">
-      <div class="detail-row"><span class="detail-k">ステータス</span><span class="detail-v"><span class="tag ${r.status}">${statusLabel}</span></span></div>
+      <div class="detail-row"><span class="detail-k">ステータス</span><span class="detail-v"><span class="tag ${r.status}">${STATUS_LABEL[r.status]||r.status}</span></span></div>
+      <div class="detail-row"><span class="detail-k">フォルダ</span><span class="detail-v">
+        <select onchange="assignFolder('${r.id}', this.value)" style="padding:6px 10px;border:2px solid var(--blue-soft);border-radius:6px;background:var(--bg);font-family:inherit;font-size:13px">${folderOpts}</select></span></div>
       <div class="detail-row"><span class="detail-k">元請け会社</span><span class="detail-v">${r.company}</span></div>
       <div class="detail-row"><span class="detail-k">乗務員</span><span class="detail-v">${r.driverName}</span></div>
-      <div class="detail-row"><span class="detail-k">作業日</span><span class="detail-v">${r.date}</span></div>
-      <div class="detail-row"><span class="detail-k">車両番号</span><span class="detail-v">${r.vehicle||'—'}</span></div>
-      <div class="detail-row"><span class="detail-k">走行距離</span><span class="detail-v">${r.distance?r.distance+' km':'—'}</span></div>
+      <div class="detail-row"><span class="detail-k">作業日</span><span class="detail-v">${fmtDateJa(r.date)}</span></div>
+      <div class="detail-row"><span class="detail-k">車両番号 / 車種</span><span class="detail-v">${r.vehicle||'—'} ／ ${r.vtype||'—'}</span></div>
+      <div class="detail-row"><span class="detail-k">走行距離</span><span class="detail-v">${r.distance?r.distance+' km':'—'}（${r.odo_start||'—'} → ${r.odo_end||'—'}）</span></div>
       <div class="detail-row"><span class="detail-k">作業時刻</span><span class="detail-v">${r.dep||'—'} 〜 ${r.arr||'—'}</span></div>
       ${destRows}
-      <div class="detail-row"><span class="detail-k">有料道路代</span><span class="detail-v">${r.toll.toLocaleString()} 円</span></div>
-      <div class="detail-row"><span class="detail-k">駐車料金</span><span class="detail-v">${r.parking.toLocaleString()} 円</span></div>
-      <div class="detail-row"><span class="detail-k">ガソリン代</span><span class="detail-v">${r.gas_fee.toLocaleString()} 円${r.gas_vol?' （'+r.gas_vol+'L）':''}</span></div>
+      <div class="detail-row"><span class="detail-k">有料道路代</span><span class="detail-v">${(r.toll||0).toLocaleString()} 円</span></div>
+      <div class="detail-row"><span class="detail-k">駐車料金</span><span class="detail-v">${(r.parking||0).toLocaleString()} 円</span></div>
+      <div class="detail-row"><span class="detail-k">給油量</span><span class="detail-v">${r.gas_vol?r.gas_vol+' L':'—'}</span></div>
+      ${r.gas_receipt?`<div class="detail-row"><span class="detail-k">給油領収書</span><span class="detail-v"><img src="${r.gas_receipt}" class="receipt-thumb" style="margin:0" onclick="window.open('').document.write('<img src=\\'${r.gas_receipt}\\' style=\\'max-width:100%\\'>')"></span></div>`:''}
+      ${r.ocr_image?`<div class="detail-row"><span class="detail-k">手書き日報（元画像）</span><span class="detail-v"><img src="${r.ocr_image}" class="receipt-thumb" style="margin:0"></span></div>`:''}
       <div class="detail-row"><span class="detail-k">特記事項</span><span class="detail-v">${r.incident||'なし'}</span></div>
       <div class="detail-row"><span class="detail-k">備考</span><span class="detail-v">${r.notes||'—'}</span></div>
-      ${r.reject_comment?`<div class="detail-row"><span class="detail-k">差し戻しコメント</span><span class="detail-v" style="color:var(--red)">${r.reject_comment}</span></div>`:''}
-      ${r.approved_by?`<div class="detail-row"><span class="detail-k">承認者</span><span class="detail-v">${r.approved_by}</span></div>`:''}
       <div class="detail-row"><span class="detail-k">提出日時</span><span class="detail-v">${new Date(r.submitted_at).toLocaleString('ja-JP')}</span></div>
+      ${r.edited_at?`<div class="detail-row"><span class="detail-k">最終編集</span><span class="detail-v">${new Date(r.edited_at).toLocaleString('ja-JP')}</span></div>`:''}
     </div>`;
 
   document.getElementById('approvalDetail').innerHTML = html;
@@ -1125,29 +1312,106 @@ function openDetail(id) {
   document.getElementById('approvalDetail').style.display='block';
 }
 
-function approveReport(id) {
+function toggleStatus(id) {
   const r = appState.reports.find(x=>x.id===id);
   if (!r) return;
-  r.status='approved'; r.approved_at=new Date().toISOString(); r.approved_by='管理者';
-  save(); openDetail(id); updateBadge();
+  r.status = r.status==='open' ? 'done' : 'open';
+  save(); openDetail(id); updateBadge(); renderDash();
 }
 
-function openRejectModal(id) {
-  appState.rejectTargetId = id;
-  document.getElementById('rejectComment').value='';
-  document.getElementById('rejectModal').classList.add('open');
+function assignFolder(id, folderId) {
+  const r = appState.reports.find(x=>x.id===id);
+  if (!r) return;
+  r.folderId = folderId||null;
+  save(); renderFolderPanel();
 }
 
-function confirmReject() {
-  const r = appState.reports.find(x=>x.id===appState.rejectTargetId);
-  if (r) {
-    r.status='rejected';
-    r.reject_comment = document.getElementById('rejectComment').value||'修正してください';
-    save();
-  }
-  closeModal('rejectModal');
-  openDetail(appState.rejectTargetId);
-  updateBadge();
+// ─── 日報の編集（管理者） ───
+function reportEditFormHTML(r, prefix) {
+  const p = prefix;
+  const destRows = r.destinations.map((d,i)=>`
+    <div class="row3" style="margin-bottom:6px">
+      <div class="field" style="margin:0"><input type="text" id="${p}_dest_name_${i}" value="${(d.name||'').replace(/"/g,'&quot;')}" placeholder="配送先 ${d.label} 名称"></div>
+      <div class="field" style="margin:0"><input type="time" id="${p}_dest_time_${i}" value="${d.time||''}"></div>
+      <div class="field" style="margin:0"><input type="number" id="${p}_dest_odo_${i}" value="${d.odo||''}" placeholder="到着メーター"></div>
+    </div>`).join('');
+  return `
+    <div class="row2">
+      <div class="field"><label>作業日</label>
+        <input type="text" class="date-display" id="${p}_date_disp" readonly value="${fmtDateJa(r.date)}" onclick="openCalendar('${p}_date')">
+        <input type="hidden" id="${p}_date" value="${r.date}"></div>
+      <div class="field"><label>乗務員名</label><input type="text" id="${p}_driver" value="${(r.driverName||'').replace(/"/g,'&quot;')}"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>車両番号</label><input type="text" id="${p}_veh" value="${(r.vehicle||'').replace(/"/g,'&quot;')}" list="vehMasterList2"></div>
+      <div class="field"><label>車種</label><select id="${p}_vt"><option value="">—</option>${VTYPES.map(t=>`<option ${r.vtype===t?'selected':''}>${t}</option>`).join('')}</select></div>
+    </div>
+    <datalist id="vehMasterList2">${appState.vehicles.map(v=>`<option value="${v.no}">`).join('')}</datalist>
+    <div class="row2">
+      <div class="field"><label>出発メーター（km）</label><input type="number" id="${p}_odo_s" value="${r.odo_start||''}"></div>
+      <div class="field"><label>終了メーター（km）</label><input type="number" id="${p}_odo_e" value="${r.odo_end||''}"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>作業開始</label><input type="time" id="${p}_dep" value="${r.dep||''}"></div>
+      <div class="field"><label>作業終了</label><input type="time" id="${p}_arr" value="${r.arr||''}"></div>
+    </div>
+    <div class="field"><label>配送先（名称／着時刻／到着メーター）</label>${destRows||'<div style="font-size:12px;color:var(--text-muted)">配送先なし</div>'}</div>
+    <div class="row3">
+      <div class="field"><label>有料道路代（円）</label><input type="number" id="${p}_toll" value="${r.toll||''}"></div>
+      <div class="field"><label>駐車料金（円）</label><input type="number" id="${p}_park" value="${r.parking||''}"></div>
+      <div class="field"><label>給油量（L）</label><input type="number" step="0.1" id="${p}_gas" value="${r.gas_vol||''}"></div>
+    </div>
+    <div class="field"><label>特記事項</label><textarea id="${p}_inc">${r.incident||''}</textarea></div>
+    <div class="field"><label>備考</label><textarea id="${p}_note">${r.notes||''}</textarea></div>`;
+}
+
+function readEditForm(r, prefix) {
+  const p = prefix;
+  const gv = id => document.getElementById(id)?.value ?? '';
+  r.date = gv(`${p}_date`) || r.date;
+  r.driverName = gv(`${p}_driver`).trim() || r.driverName;
+  r.vehicle = gv(`${p}_veh`).trim();
+  r.vtype = gv(`${p}_vt`);
+  r.odo_start = parseFloat(gv(`${p}_odo_s`))||0;
+  r.odo_end = parseFloat(gv(`${p}_odo_e`))||0;
+  r.distance = r.odo_end>r.odo_start ? r.odo_end-r.odo_start : 0;
+  r.dep = gv(`${p}_dep`); r.arr = gv(`${p}_arr`);
+  r.destinations.forEach((d,i)=>{
+    d.name = gv(`${p}_dest_name_${i}`);
+    d.time = gv(`${p}_dest_time_${i}`);
+    d.odo = parseFloat(gv(`${p}_dest_odo_${i}`))||d.odo||'';
+  });
+  r.toll = parseInt(gv(`${p}_toll`))||0;
+  r.parking = parseInt(gv(`${p}_park`))||0;
+  r.gas_vol = parseFloat(gv(`${p}_gas`))||0;
+  r.incident = gv(`${p}_inc`);
+  r.notes = gv(`${p}_note`);
+}
+
+function openEdit(id) {
+  const r = appState.reports.find(x=>x.id===id);
+  if (!r) return;
+  const html = `
+    <div class="action-row" style="margin-bottom:14px">
+      <button class="btn-back-list" onclick="openDetail('${r.id}')">← 詳細に戻る</button>
+      <button class="btn-approve" onclick="saveEdit('${r.id}')">💾 保存する</button>
+    </div>
+    <div class="detail-card">
+      <div class="card-title">✏ 日報の編集（${r.company}）</div>
+      ${reportEditFormHTML(r,'e')}
+    </div>`;
+  document.getElementById('approvalDetail').innerHTML = html;
+  document.getElementById('approvalList').style.display='none';
+  document.getElementById('approvalDetail').style.display='block';
+}
+
+function saveEdit(id) {
+  const r = appState.reports.find(x=>x.id===id);
+  if (!r) return;
+  readEditForm(r,'e');
+  r.edited_at = new Date().toISOString();
+  save(); updateBadge(); renderDash(); renderRecords();
+  openDetail(id);
 }
 
 // PDF print
@@ -1328,7 +1592,7 @@ function printNittsu(r) {
       <div class="brow" style="margin-top:3px">
         <div class="chk" style="flex:1">品名<br>外袋確認</div>
         <div class="chk" style="flex:1">残置<br>確認</div>
-        <div style="flex:2;font-size:7px;color:#999;text-align:right;align-self:flex-end">承認者：${r.approved_by||'—'}<br>出力：${new Date().toLocaleString('ja-JP')}</div>
+        <div style="flex:2;font-size:7px;color:#999;text-align:right;align-self:flex-end">出力：${new Date().toLocaleString('ja-JP')}</div>
       </div>
     </div>
   </div>
@@ -1481,7 +1745,7 @@ function printSeikoIsis(r) {
 <div class="company">正光運輸株式会社</div>
 
 <div style="text-align:right;font-size:7px;color:#999;margin-top:2px">
-  承認者：${r.approved_by||'—'}　出力：${new Date().toLocaleString('ja-JP')}
+  出力：${new Date().toLocaleString('ja-JP')}
 </div>
 <script>window.onload=function(){window.print()}<\/script>
 </body></html>`);
@@ -1512,7 +1776,7 @@ function printGeneric(r) {
   @media print{button{display:none}}
 </style></head><body>
 <h1>運　行　日　報</h1>
-<div style="text-align:right;font-size:10px;margin-bottom:8px">元請け：${r.company}　提出：${r.date}　<b style="color:#c00">✓ 承認済み</b></div>
+<div style="text-align:right;font-size:10px;margin-bottom:8px">元請け：${r.company}　提出：${r.date}</div>
 <div class="section">基本情報</div>
 <table><tbody>
   <tr><th>乗務員</th><td>${r.driverName}</td><th>作業日</th><td>${r.date}</td></tr>
@@ -1526,13 +1790,13 @@ function printGeneric(r) {
 <div class="section">費用</div>
 <table><tbody>
   <tr><th>有料道路代</th><td>${r.toll.toLocaleString()} 円</td><th>駐車料金</th><td>${r.parking.toLocaleString()} 円</td></tr>
-  <tr><th>ガソリン代</th><td>${r.gas_fee.toLocaleString()} 円</td><th>給油量</th><td>${r.gas_vol?r.gas_vol+' L':'—'}</td></tr>
+  <tr><th>給油量</th><td>${r.gas_vol?r.gas_vol+' L':'—'}</td><th>給油領収書</th><td>${r.gas_receipt?'あり（システム内に保存）':'—'}</td></tr>
 </tbody></table>
 ${r.incident||r.notes?`<div class="section">特記事項・備考</div><table><tbody>
   <tr><th>特記事項</th><td>${r.incident||'なし'}</td></tr>
   <tr><th>備考</th><td>${r.notes||'—'}</td></tr>
 </tbody></table>`:''}
-<div style="margin-top:20px;text-align:right;font-size:10px">承認者：${r.approved_by||'—'}　承認日時：${r.approved_at?new Date(r.approved_at).toLocaleString('ja-JP'):'—'}</div>
+<div style="margin-top:20px;text-align:right;font-size:10px">出力日時：${new Date().toLocaleString('ja-JP')}</div>
 <script>window.onload=function(){window.print()}<\/script>
 </body></html>`);
   w.document.close();
@@ -1628,12 +1892,12 @@ table.kanri td{height:26px}
     </div>
     <div style="display:flex;align-items:stretch">
       <div class="garage" style="border-left:none;flex:1">桑原自動車　03-3974-6103<br>UDトラックス関東支社　03-3965-2394<br>桧田自動車　048-421-0589</div>
-      <table class="kanri"><tr><th>運行管理</th><th>整備管理</th></tr><tr><td><span class="appr">${r.approved_by?'承認済':''}</span></td><td></td></tr></table>
+      <table class="kanri"><tr><th>運行管理</th><th>整備管理</th></tr><tr><td></td><td></td></tr></table>
     </div>
   </div>
 </div>
 </div>
-<div style="text-align:right;font-size:7px;color:#999;margin-top:2px">承認者：${r.approved_by||'—'}　出力：${new Date().toLocaleString('ja-JP')}</div>
+<div style="text-align:right;font-size:7px;color:#999;margin-top:2px">出力：${new Date().toLocaleString('ja-JP')}</div>
 <script>window.onload=function(){window.print()}<\/script>
 </body></html>`;
   w.document.write(html);
@@ -1712,7 +1976,7 @@ table.det td.c{text-align:center}table.det td.r{text-align:right}
 </thead><tbody>${destRows}${empties}</tbody></table>
 <div class="note-row"><div class="note-lbl">特記事項・備考</div><div>${r.incident||r.notes||''}</div></div>
 <div class="sign-row">
-  <div class="scell">確認者<div class="approved-stamp">${r.approved_by?'承認済':''}</div></div>
+  <div class="scell">確認者</div>
   <div class="scell">営業所長</div><div class="scell">係</div>
   <div class="scell" style="flex:2;text-align:right;font-weight:normal;font-size:7.5px">出力：${new Date().toLocaleString('ja-JP')}</div>
 </div>
@@ -1781,7 +2045,7 @@ table.det td.c{text-align:center}
   <div class="date">令和${reiwa}年　${mm}月　${dd}日（${dow}）曜日　天候（　　）</div>
   <div class="head-right">
     <table class="bx"><tr><th style="width:110px">所属店所名</th></tr><tr><td style="height:20px"></td></tr></table>
-    <table class="bx"><tr><th>運行管理者印</th><th>整備管理者印</th></tr><tr><td style="height:20px;width:54px"><span class="appr">${r.approved_by?'承認済':''}</span></td><td style="width:54px"></td></tr></table>
+    <table class="bx"><tr><th>運行管理者印</th><th>整備管理者印</th></tr><tr><td style="height:20px;width:54px"></td><td style="width:54px"></td></tr></table>
     <table class="bx"><tr><th style="width:110px">運転(点検)者名</th></tr><tr><td style="height:20px">${r.driverName}</td></tr></table>
     <table class="bx"><tr><th style="width:90px">作業員名</th></tr><tr><td style="height:20px"></td></tr></table>
     <table class="bx"><tr><th style="width:80px">偏荷重の有無</th></tr><tr><td style="height:20px;text-align:center">有　・　無</td></tr></table>
@@ -1837,7 +2101,7 @@ table.det td.c{text-align:center}
 
 <div class="bottom-note">
   <span>出張配送は(1)にダイヤグラムの合計を記入する。送状枚数は同店は1店とする。</span>
-  <span style="color:#999;font-size:7px">承認者：${r.approved_by||'—'}　出力：${new Date().toLocaleString('ja-JP')}</span>
+  <span style="color:#999;font-size:7px">出力：${new Date().toLocaleString('ja-JP')}</span>
   <span class="co">武蔵貨物自動車グループ</span>
 </div>
 <script>window.onload=function(){window.print()}<\/script>
@@ -1882,7 +2146,7 @@ function renderRecords() {
   const totalDist = filtered.reduce((a,r)=>a+(r.distance||0),0);
   const totalDests = filtered.reduce((a,r)=>a+r.destinations.length,0);
   const totalToll = filtered.reduce((a,r)=>a+(r.toll||0),0);
-  const totalGas = filtered.reduce((a,r)=>a+(r.gas_fee||0),0);
+  const totalGasVol = filtered.reduce((a,r)=>a+(r.gas_vol||0),0);
   const activeDays = [...new Set(filtered.map(r=>r.date))].length;
 
   document.getElementById('recordsSummary').innerHTML = `
@@ -1895,7 +2159,7 @@ function renderRecords() {
     </div>
     <div class="row2" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--blue-soft)">
       <div style="text-align:center"><div style="font-size:11px;color:var(--text-muted);font-weight:700">有料道路代合計</div><div style="font-size:18px;font-weight:700">${totalToll.toLocaleString()} 円</div></div>
-      <div style="text-align:center"><div style="font-size:11px;color:var(--text-muted);font-weight:700">ガソリン代合計</div><div style="font-size:18px;font-weight:700">${totalGas.toLocaleString()} 円</div></div>
+      <div style="text-align:center"><div style="font-size:11px;color:var(--text-muted);font-weight:700">給油量合計</div><div style="font-size:18px;font-weight:700">${Math.round(totalGasVol*10)/10} L</div></div>
     </div>`;
 
   document.getElementById('recordsList').innerHTML = filtered.length
@@ -1961,6 +2225,307 @@ function confirmDeleteDriver() {
 function reactivateDriver(id) {
   const d = appState.drivers.find(x=>x.id===id);
   if (d) { d.active=true; save(); renderDriverPanel(); }
+}
+
+// ─── 車両管理（車両番号⇔車種マスタ） ───
+function renderVehiclePanel() {
+  const typeSel = document.getElementById('new-veh-type');
+  if (typeSel && !typeSel.options.length) {
+    typeSel.innerHTML = '<option value="">選択してください</option>' + VTYPES.map(t=>`<option>${t}</option>`).join('');
+  }
+  const tbody = appState.vehicles.map((v,i)=>`
+    <tr>
+      <td>${v.no}</td>
+      <td>
+        <select onchange="updateVehicleType(${i}, this.value)" style="padding:6px 10px;border:2px solid var(--blue-soft);border-radius:6px;background:var(--bg);font-family:inherit;font-size:13px">
+          <option value="">—</option>
+          ${VTYPES.map(t=>`<option ${v.vtype===t?'selected':''}>${t}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <button class="btn-sm edit" onclick="renameVehicle(${i})">車番修正</button>
+        <button class="btn-sm del" onclick="deleteVehicle(${i})">削除</button>
+      </td>
+    </tr>`).join('');
+  const el = document.getElementById('vehicleTable');
+  if (el) el.innerHTML = `
+    <table class="driver-table">
+      <thead><tr><th>車両番号</th><th>車種</th><th>操作</th></tr></thead>
+      <tbody>${tbody||'<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:24px">車両が登録されていません</td></tr>'}</tbody>
+    </table>`;
+}
+
+function addVehicle() {
+  const no = document.getElementById('new-veh-no').value.trim();
+  const vtype = document.getElementById('new-veh-type').value;
+  if (!no) { alert('車両番号を入力してください'); return; }
+  if (appState.vehicles.some(v=>v.no===no)) { alert('この車両番号は登録済みです'); return; }
+  appState.vehicles.push({no, vtype});
+  save();
+  document.getElementById('new-veh-no').value='';
+  document.getElementById('new-veh-type').value='';
+  renderVehiclePanel();
+}
+
+function updateVehicleType(i, vtype) {
+  if (appState.vehicles[i]) { appState.vehicles[i].vtype = vtype; save(); }
+}
+
+function renameVehicle(i) {
+  const v = appState.vehicles[i];
+  if (!v) return;
+  const no = prompt('車両番号を修正してください', v.no);
+  if (no===null) return;
+  const trimmed = no.trim();
+  if (!trimmed) { alert('車両番号を入力してください'); return; }
+  if (appState.vehicles.some((x,idx)=>idx!==i && x.no===trimmed)) { alert('この車両番号は登録済みです'); return; }
+  v.no = trimmed; save(); renderVehiclePanel();
+}
+
+function deleteVehicle(i) {
+  const v = appState.vehicles[i];
+  if (!v) return;
+  if (!confirm(`車両「${v.no}」をマスタから削除しますか？\n（過去の日報データはそのまま残ります）`)) return;
+  appState.vehicles.splice(i,1); save(); renderVehiclePanel();
+}
+
+// ─── フォルダ管理 ───
+function renderFolderPanel() {
+  const listEl = document.getElementById('folderList');
+  if (!listEl) return;
+  const countOf = fid => appState.reports.filter(r=> fid==='all' ? true : fid==='none' ? !r.folderId : r.folderId===fid).length;
+  const sel = appState.selectedFolderId;
+
+  const item = (fid, icon, name, actions='') => `
+    <div class="folder-item ${sel===fid?'sel':''}" onclick="selectFolder('${fid}')">
+      <span>${icon}</span><span class="folder-name">${name}</span>
+      ${actions}
+      <span class="folder-count">${countOf(fid)} 件</span>
+    </div>`;
+
+  listEl.innerHTML =
+    item('all','📄','全ての日報') +
+    item('none','🗂','未分類') +
+    appState.folders.map(f=>item(f.id,'📁',f.name,
+      `<button class="btn-sm edit" onclick="event.stopPropagation();renameFolder('${f.id}')">名称変更</button>
+       <button class="btn-sm del" onclick="event.stopPropagation();deleteFolder('${f.id}')">削除</button>`)).join('');
+
+  const folder = appState.folders.find(f=>f.id===sel);
+  const title = sel==='all' ? '全ての日報' : sel==='none' ? '未分類の日報' : `📁 ${folder?folder.name:''}`;
+  document.getElementById('folderReportsTitle').textContent = `📄 ${title}`;
+
+  const reports = appState.reports
+    .filter(r=> sel==='all' ? true : sel==='none' ? !r.folderId : r.folderId===sel)
+    .sort((a,b)=>new Date(b.submitted_at)-new Date(a.submitted_at));
+  document.getElementById('folderReports').innerHTML =
+    reports.length
+      ? '<div class="report-list">'+reports.map(r=>reportItemHTML(r)).join('')+'</div>'
+      : '<div style="text-align:center;padding:32px;color:var(--text-muted)">日報がありません</div>';
+}
+
+function selectFolder(fid) {
+  appState.selectedFolderId = fid;
+  renderFolderPanel();
+}
+
+function addFolder() {
+  const name = document.getElementById('new-folder-name').value.trim();
+  if (!name) { alert('フォルダ名を入力してください'); return; }
+  if (appState.folders.some(f=>f.name===name)) { alert('同じ名前のフォルダがあります'); return; }
+  appState.folders.push({id:'F'+Date.now(), name});
+  save();
+  document.getElementById('new-folder-name').value='';
+  renderFolderPanel();
+}
+
+function renameFolder(id) {
+  const f = appState.folders.find(x=>x.id===id);
+  if (!f) return;
+  const name = prompt('フォルダ名を変更してください', f.name);
+  if (name===null || !name.trim()) return;
+  f.name = name.trim(); save(); renderFolderPanel();
+}
+
+function deleteFolder(id) {
+  const f = appState.folders.find(x=>x.id===id);
+  if (!f) return;
+  if (!confirm(`フォルダ「${f.name}」を削除しますか？\n（中の日報は「未分類」に移動します）`)) return;
+  appState.reports.forEach(r=>{ if (r.folderId===id) r.folderId=null; });
+  appState.folders = appState.folders.filter(x=>x.id!==id);
+  if (appState.selectedFolderId===id) appState.selectedFolderId='all';
+  save(); renderFolderPanel();
+}
+
+// ─── 手書き日報のOCR取込 ───
+function renderOcrPanel() {
+  const keyEl = document.getElementById('ocr-api-key');
+  if (keyEl) keyEl.value = localStorage.getItem('drs_api_key')||'';
+}
+
+function saveApiKey(v) {
+  localStorage.setItem('drs_api_key', v.trim());
+}
+
+async function handleOcrImage(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  try {
+    // OCR用は読み取り精度優先で大きめ・高品質に圧縮
+    appState._ocrImage = await compressImage(file, 1568, 0.85);
+    const img = document.getElementById('ocr-preview');
+    img.src = appState._ocrImage;
+    img.style.display = 'block';
+    document.getElementById('ocr-run-btn').style.display = 'block';
+    document.getElementById('ocr-result-card').style.display = 'none';
+    setOcrStatus('', '');
+  } catch(e) {
+    setOcrStatus('err', '画像の読み込みに失敗しました');
+  }
+}
+
+function setOcrStatus(cls, msg) {
+  const el = document.getElementById('ocr-status');
+  el.className = 'ocr-status' + (cls?' '+cls:'');
+  el.textContent = msg;
+}
+
+const OCR_SCHEMA = {
+  type: 'object',
+  properties: {
+    date: {type:'string', description:'作業日 YYYY-MM-DD形式。読めなければ空文字'},
+    driverName: {type:'string', description:'乗務員（運転者）氏名'},
+    company: {type:'string', description:'元請け会社名（日本通運/正光運輸/イシスネット/城北陸運/名鉄運輸/武蔵貨物のいずれかに該当しそうならその名前）'},
+    vehicle: {type:'string', description:'車両番号'},
+    odo_start: {type:'number', description:'出発時メーター(km)。不明なら0'},
+    odo_end: {type:'number', description:'帰着時メーター(km)。不明なら0'},
+    dep: {type:'string', description:'作業開始時刻 HH:MM。不明なら空文字'},
+    arr: {type:'string', description:'作業終了時刻 HH:MM。不明なら空文字'},
+    destinations: {type:'array', items:{
+      type:'object',
+      properties:{
+        name:{type:'string', description:'配送先・積卸場所名'},
+        time:{type:'string', description:'着時刻 HH:MM。不明なら空文字'}
+      },
+      required:['name','time'], additionalProperties:false
+    }},
+    toll: {type:'number', description:'有料道路代(円)。不明なら0'},
+    parking: {type:'number', description:'駐車料金(円)。不明なら0'},
+    gas_vol: {type:'number', description:'給油量(L)。不明なら0'},
+    incident: {type:'string', description:'事故・特記事項。なければ空文字'},
+    notes: {type:'string', description:'その他読み取れた備考・不明瞭で確認が必要な箇所のメモ'}
+  },
+  required: ['date','driverName','company','vehicle','odo_start','odo_end','dep','arr','destinations','toll','parking','gas_vol','incident','notes'],
+  additionalProperties: false
+};
+
+async function runOcr() {
+  const apiKey = (localStorage.getItem('drs_api_key')||'').trim();
+  if (!apiKey) { setOcrStatus('err','APIキーを入力してください'); return; }
+  if (!appState._ocrImage) { setOcrStatus('err','先に写真を選択してください'); return; }
+
+  const btn = document.getElementById('ocr-run-btn');
+  btn.disabled = true;
+  setOcrStatus('info','🤖 AIが手書き日報を読み取っています…（10〜30秒ほどかかります）');
+
+  try {
+    const base64 = appState._ocrImage.split(',')[1];
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-5',
+        max_tokens: 4096,
+        output_config: {format: {type:'json_schema', schema: OCR_SCHEMA}},
+        messages: [{
+          role: 'user',
+          content: [
+            {type:'image', source:{type:'base64', media_type:'image/jpeg', data: base64}},
+            {type:'text', text:'これは運送会社の手書きの運行日報の写真です。記載内容を読み取り、指定のJSON形式で出力してください。判読できない文字は無理に推測せず、空文字または0とし、不明瞭だった箇所はnotesに「要確認：…」として記録してください。日付が令和表記の場合は西暦に変換してください（令和8年=2026年）。'}
+          ]
+        }]
+      })
+    });
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(()=>null);
+      throw new Error(errBody?.error?.message || `APIエラー (HTTP ${res.status})`);
+    }
+    const data = await res.json();
+    if (data.stop_reason === 'refusal') throw new Error('AIが読み取りを拒否しました。別の画像でお試しください。');
+    const textBlock = (data.content||[]).find(b=>b.type==='text');
+    if (!textBlock) throw new Error('読み取り結果が空でした');
+    appState._ocrData = JSON.parse(textBlock.text);
+    showOcrForm(appState._ocrData);
+    setOcrStatus('ok','✅ 読み取りが完了しました。内容を確認・修正して保存してください。');
+  } catch(e) {
+    setOcrStatus('err','読み取りに失敗しました：' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function showOcrForm(o) {
+  const coMatch = COMPANIES.find(c=>o.company && o.company.includes(c.name.slice(0,2)));
+  const dests = (o.destinations && o.destinations.length ? o.destinations : [{name:'',time:''}])
+    .slice(0,26)
+    .map((d,i)=>({label:ALPHA[i], name:d.name||'', time:d.time||'', area:'', odo:'', items:'', client:'', count:'', from:''}));
+  // 編集フォームを流用するため一時reportオブジェクトを構成
+  appState._ocrDraft = {
+    company: coMatch?coMatch.name:(o.company||''), companyId: coMatch?coMatch.id:'',
+    date: /^\d{4}-\d{2}-\d{2}$/.test(o.date)?o.date:today(),
+    driverName: o.driverName||'', vehicle: o.vehicle||'', vtype:'',
+    odo_start: o.odo_start||0, odo_end: o.odo_end||0,
+    dep: o.dep||'', arr: o.arr||'',
+    destinations: dests,
+    toll: o.toll||0, parking: o.parking||0, gas_vol: o.gas_vol||0,
+    incident: o.incident||'', notes: o.notes||'',
+  };
+  const v = appState.vehicles.find(x=>x.no===appState._ocrDraft.vehicle);
+  if (v) appState._ocrDraft.vtype = v.vtype;
+
+  const coOpts = COMPANIES.map(c=>`<option value="${c.id}" ${appState._ocrDraft.companyId===c.id?'selected':''}>${c.name}</option>`).join('');
+  document.getElementById('ocr-form').innerHTML = `
+    <div class="field"><label>元請け会社</label><select id="o_co">${coOpts}</select></div>
+    ${reportEditFormHTML(appState._ocrDraft,'o')}`;
+  document.getElementById('ocr-result-card').style.display = 'block';
+  document.getElementById('ocr-result-card').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function saveOcrReport() {
+  const d = appState._ocrDraft;
+  if (!d) return;
+  readEditForm(d,'o');
+  const co = COMPANIES.find(c=>c.id===document.getElementById('o_co').value) || COMPANIES[0];
+  const drv = appState.drivers.find(x=>x.active && x.name===d.driverName);
+  const report = {
+    id: 'R'+Date.now(),
+    company: co.name, companyId: co.id,
+    driverId: drv?drv.id:'', driverName: d.driverName,
+    date: d.date, vehicle: d.vehicle, vtype: d.vtype,
+    odo_start: d.odo_start, odo_end: d.odo_end, distance: d.distance||0,
+    dep: d.dep, arr: d.arr,
+    destinations: d.destinations,
+    toll: d.toll, parking: d.parking, gas_vol: d.gas_vol, gas_receipt: null,
+    incident: d.incident, notes: d.notes,
+    status: 'open', folderId: null,
+    ocr: true, ocr_image: appState._ocrImage,
+    submitted_at: new Date().toISOString(),
+    input_minutes: 3,
+  };
+  appState.reports.push(report);
+  save();
+  appState._ocrDraft = null; appState._ocrImage = null; appState._ocrData = null;
+  document.getElementById('ocr-result-card').style.display='none';
+  document.getElementById('ocr-preview').style.display='none';
+  document.getElementById('ocr-run-btn').style.display='none';
+  document.getElementById('ocr-file').value='';
+  setOcrStatus('ok','✅ 日報として保存しました（日報管理の「未対応」に追加されています）');
+  updateBadge(); renderDash(); renderRecords();
 }
 
 // KPI
