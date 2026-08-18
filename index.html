@@ -460,11 +460,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','N
       <div class="sec-title">車両管理（車両番号と車種の紐づけ）</div>
       <div class="card" style="margin-bottom:16px">
         <div class="card-title">➕ 車両の追加</div>
-        <div class="row3">
+        <div class="row4">
           <div class="field"><label>車両番号 <span class="req">必須</span></label><input type="text" id="new-veh-no" placeholder="例：江東100あ887"></div>
-          <div class="field"><label>車種</label><select id="new-veh-type"></select></div>
+          <div class="field"><label>車種</label><input type="text" id="new-veh-type" list="vtypeDl" placeholder="例：2t ゲート"></div>
+          <div class="field"><label>会社</label><select id="new-veh-co"><option value="">—</option><option>正光</option><option>イシス</option></select></div>
           <div class="field" style="display:flex;align-items:flex-end"><button class="btn-primary" style="width:auto;padding:10px 24px" onclick="addVehicle()">追加する</button></div>
         </div>
+        <datalist id="vtypeDl"></datalist>
         <div style="font-size:12px;color:var(--text-muted)">※ ドライバー画面で車両番号を入力すると、ここで登録した車種が自動でセットされます（車両番号は手打ちでも入力できます）。</div>
       </div>
       <div class="card">
@@ -584,7 +586,128 @@ const COMPANIES = [
   {id:'musashi',name:'武蔵貨物',sub:'業務日報',icon:'🟤'},
 ];
 const STEPS = ['会社選択','基本情報','作業記録','費用・備考','完了'];
-const VTYPES = ['2t車','4t車（平ボディ）','4t車（ウイング）','大型車','ゲート付き','その他'];
+const VTYPES = ['2t車','4t車（平ボディ）','4t車（ウイング）','大型車','ゲート付き','その他']; // 車両マスタが空の場合のフォールバック候補
+
+// 車両マスタ初期データ（車両一覧 イシス・正光.xlsx 2026-08-10現在, 正光79台＋イシス37台）
+// 更新時はここを差し替えれば、利用中ブラウザにも未登録分が自動追加される
+const DEFAULT_VEHICLES = [
+{"no":"足立132を18","vtype":"4t ウイング","co":"正光"},
+{"no":"練馬100い457","vtype":"2t ショート","co":"正光"},
+{"no":"江東100あ66","vtype":"2t ゲート","co":"イシス"},
+{"no":"江東100あ116","vtype":"2t ゲート","co":"正光"},
+{"no":"練馬100い664","vtype":"2t ショート","co":"正光"},
+{"no":"江東100あ218","vtype":"2t ゲート","co":"イシス"},
+{"no":"江東400あ152","vtype":"1t ルートバン","co":"正光"},
+{"no":"練馬101あ717","vtype":"4tw ウイング","co":"正光"},
+{"no":"江東100あ299","vtype":"4t ワイドウィングゲート","co":"イシス"},
+{"no":"江東100あ157","vtype":"2t ロング","co":"正光"},
+{"no":"練馬101あ940","vtype":"2t ショート","co":"正光"},
+{"no":"江東400あ535","vtype":"1t ルートバン","co":"イシス"},
+{"no":"江東400あ193","vtype":"3t 平ボディS","co":"正光"},
+{"no":"練馬100か1316","vtype":"8t ウイング","co":"正光"},
+{"no":"江東100あ578","vtype":"2t 平ロング","co":"イシス"},
+{"no":"江東100あ219","vtype":"2t 平ボディゲート","co":"正光"},
+{"no":"練馬100か1389","vtype":"8t アルミバン","co":"正光"},
+{"no":"江東100あ666","vtype":"4t ワイドウィング","co":"イシス"},
+{"no":"足立102あ253","vtype":"2t ロング","co":"正光"},
+{"no":"練馬100い1465","vtype":"2t ロング","co":"正光"},
+{"no":"江東100あ887","vtype":"2t ワイドフルゲート","co":"イシス"},
+{"no":"足立101い277","vtype":"2t ショート","co":"正光"},
+{"no":"練馬100い2024","vtype":"2t ショート","co":"正光"},
+{"no":"江東100あ992","vtype":"4t ウィング","co":"イシス"},
+{"no":"足立101い514","vtype":"2t ゲート","co":"正光"},
+{"no":"練馬100か2054","vtype":"8t ウイング","co":"正光"},
+{"no":"江東100あ1312","vtype":"2t ロング","co":"イシス"},
+{"no":"江東100あ702","vtype":"4t ウイング","co":"正光"},
+{"no":"練馬100い2094","vtype":"4tw アルミバン","co":"正光"},
+{"no":"江東100あ1484","vtype":"4t ワイドウィングゲート","co":"イシス"},
+{"no":"江東100あ785","vtype":"2t ロング","co":"正光"},
+{"no":"練馬100か2134","vtype":"10t ウイング","co":"正光"},
+{"no":"江東100あ1596","vtype":"4t ワイド","co":"イシス"},
+{"no":"江東100あ819","vtype":"2t ロング","co":"正光"},
+{"no":"江東110あ2607","vtype":"3t ショート","co":"正光"},
+{"no":"足立102あ1665","vtype":"2t ロング","co":"イシス"},
+{"no":"足立101い1083","vtype":"4t ゲート","co":"正光"},
+{"no":"練馬100か3115","vtype":"10t ウイング","co":"正光"},
+{"no":"江東100あ1708","vtype":"4t ウィング","co":"イシス"},
+{"no":"江東100あ1700","vtype":"2t ゲート","co":"正光"},
+{"no":"練馬100か3307","vtype":"10t ウイング","co":"正光"},
+{"no":"江東100あ1769","vtype":"4t ワイドゲート","co":"イシス"},
+{"no":"江東100あ1701","vtype":"4t ワイドウイング","co":"正光"},
+{"no":"練馬100い3698","vtype":"4tw ウイング","co":"正光"},
+{"no":"江東100あ1938","vtype":"4t セミロング","co":"イシス"},
+{"no":"足立102あ1723","vtype":"2t ワイドゲート","co":"正光"},
+{"no":"練馬100あ3832","vtype":"2t ロング","co":"正光"},
+{"no":"足立400い2354","vtype":"1t ルートバン","co":"イシス"},
+{"no":"足立102あ1853","vtype":"2t ロング","co":"正光"},
+{"no":"練馬100か4002","vtype":"10t ウイング","co":"正光"},
+{"no":"江東100あ2366","vtype":"2t リンボーゲート","co":"イシス"},
+{"no":"江東100あ2013","vtype":"2t セミロング","co":"正光"},
+{"no":"練馬100か4068","vtype":"8t アルミバン","co":"正光"},
+{"no":"足立102あ2368","vtype":"4t ウィング","co":"イシス"},
+{"no":"江東100あ2014","vtype":"3t リンボーゲート","co":"正光"},
+{"no":"練馬400あ4154","vtype":"2t ショート","co":"正光"},
+{"no":"江東100あ2452","vtype":"2t ロング","co":"イシス"},
+{"no":"足立101い2239","vtype":"2t ゲート","co":"正光"},
+{"no":"練馬400あ4314","vtype":"1t ルートバン","co":"正光"},
+{"no":"足立102あ3026","vtype":"2t ロング","co":"イシス"},
+{"no":"足立102あ2367","vtype":"3t リンボーゲート","co":"正光"},
+{"no":"練馬400あ7208","vtype":"1t ルートバン","co":"正光"},
+{"no":"江東100あ3154","vtype":"2t 平ゲート","co":"イシス"},
+{"no":"江東100あ2367","vtype":"2t ロング","co":"正光"},
+{"no":"練馬400あ7691","vtype":"1t ルートバン","co":"正光"},
+{"no":"足立102あ3218","vtype":"2t ゲート","co":"イシス"},
+{"no":"江東100あ2396","vtype":"2t 平ボディゲート","co":"正光"},
+{"no":"練馬100あ7974","vtype":"4t アルミバン","co":"正光"},
+{"no":"足立102あ3256","vtype":"4t ウィング","co":"イシス"},
+{"no":"江東110い2603","vtype":"大型 ウィング","co":"正光"},
+{"no":"練馬100あ7995","vtype":"4t アルミバン","co":"正光"},
+{"no":"足立102あ3547","vtype":"2t ゲート","co":"イシス"},
+{"no":"江東100あ2864","vtype":"3t ゲート","co":"正光"},
+{"no":"練馬100あ8102","vtype":"4t アルミバン","co":"正光"},
+{"no":"足立400い4927","vtype":"1t ルートバン","co":"イシス"},
+{"no":"江東100あ3058","vtype":"4t ワイドゲート","co":"正光"},
+{"no":"練馬130あ8118","vtype":"1t ルートバン","co":"正光"},
+{"no":"足立102あ5145","vtype":"4t ウィング","co":"イシス"},
+{"no":"足立101い3080","vtype":"4t ウイング","co":"正光"},
+{"no":"練馬100あ8125","vtype":"2t ショート","co":"正光"},
+{"no":"足立101い5675","vtype":"2t ロング","co":"イシス"},
+{"no":"足立101あ3447","vtype":"2t ゲート","co":"正光"},
+{"no":"練馬100あ8138","vtype":"4tw アルミバン","co":"正光"},
+{"no":"足立101い5688","vtype":"2t リンボーゲート","co":"イシス"},
+{"no":"足立102あ3507","vtype":"2t ロング","co":"正光"},
+{"no":"練馬100あ9805","vtype":"2t ロング","co":"正光"},
+{"no":"足立102あ5815","vtype":"2t ワイドゲート","co":"イシス"},
+{"no":"足立102あ4253","vtype":"4t ウイング","co":"正光"},
+{"no":"足立102あ5952","vtype":"2t リンボーゲート","co":"イシス"},
+{"no":"足立400い4312","vtype":"2t 平ボディS","co":"正光"},
+{"no":"足立101い6429","vtype":"2t ロング","co":"イシス"},
+{"no":"足立101い4524","vtype":"2.9t ゲート","co":"正光"},
+{"no":"足立101い6658","vtype":"2t ゲート","co":"イシス"},
+{"no":"足立102あ4634","vtype":"2t ロング","co":"正光"},
+{"no":"足立101い7203","vtype":"2t ロング","co":"イシス"},
+{"no":"足立101い4689","vtype":"4t ワイドゲート","co":"正光"},
+{"no":"足立101い8301","vtype":"2t ワイドゲート","co":"イシス"},
+{"no":"足立102あ4869","vtype":"2t ロング","co":"正光"},
+{"no":"足立101い8803","vtype":"2t ロング","co":"イシス"},
+{"no":"足立101あ5169","vtype":"2t ゲート","co":"正光"},
+{"no":"足立101い9394","vtype":"2t ゲート","co":"イシス"},
+{"no":"足立101い5475","vtype":"4t ワイドゲート","co":"正光"},
+{"no":"足立101い9473","vtype":"4t ワイドウィング","co":"イシス"},
+{"no":"足立102あ5715","vtype":"2t ワイドゲート","co":"正光"},
+{"no":"足立101い5740","vtype":"2t 平ボディＬ","co":"正光"},
+{"no":"足立100き5761","vtype":"4t増 ウイングゲート","co":"正光"},
+{"no":"足立102あ5833","vtype":"3t リンボーゲート","co":"正光"},
+{"no":"足立102あ6075","vtype":"2t ロング","co":"正光"},
+{"no":"足立101い6409","vtype":"4t ウイング","co":"正光"},
+{"no":"足立400い6653","vtype":"1.5t 平ボディ幌","co":"正光"},
+{"no":"足立101い6966","vtype":"3t リンボーゲート","co":"正光"},
+{"no":"足立101い8070","vtype":"2t ロング","co":"正光"},
+{"no":"足立400あ8291","vtype":"1t ルートバン","co":"正光"},
+{"no":"足立101い8416","vtype":"2t ロング","co":"正光"},
+{"no":"足立101い9723","vtype":"2t ロング","co":"正光"},
+{"no":"江東100あ3155","vtype":"2t ロング","co":"正光"}
+];
 
 let appState = {
   step: 0,
@@ -596,11 +719,7 @@ let appState = {
     {id:'D002',name:'佐藤 次郎',vehicle:'江東100い234',active:true},
     {id:'D003',name:'鈴木 三郎',vehicle:'江東100う567',active:true},
   ])),
-  vehicles: JSON.parse(localStorage.getItem('drs_vehicles')||JSON.stringify([
-    {no:'江東100あ887',vtype:'2t車'},
-    {no:'江東100い234',vtype:'4t車（平ボディ）'},
-    {no:'江東100う567',vtype:'4t車（ウイング）'},
-  ])),
+  vehicles: JSON.parse(localStorage.getItem('drs_vehicles')||'[]'),
   folders: JSON.parse(localStorage.getItem('drs_folders')||'[]'),
   adminLoggedIn: false,
   currentPanel: 'dash',
@@ -623,6 +742,33 @@ let appState = {
   });
   if (changed) localStorage.setItem('drs_reports', JSON.stringify(appState.reports));
 })();
+
+// 車両マスタ移行: v6デモデータの整理 + DEFAULT_VEHICLES の未登録分を自動追加
+(function migrateVehicles(){
+  let changed = false;
+  // v6のデモ車両（架空）を削除・置換
+  const before = appState.vehicles.length;
+  appState.vehicles = appState.vehicles.filter(v=>!(
+    (v.no==='江東100い234'&&v.vtype==='4t車（平ボディ）')||(v.no==='江東100う567'&&v.vtype==='4t車（ウイング）')));
+  if (appState.vehicles.length!==before) changed = true;
+  const demo887 = appState.vehicles.find(v=>v.no==='江東100あ887'&&v.vtype==='2t車');
+  if (demo887) { demo887.vtype='2t ワイドフルゲート'; demo887.co='イシス'; changed = true; }
+  // 実データの未登録分を追加（DEFAULT_VEHICLES更新が既存ブラウザにも反映される）
+  const known = new Set(appState.vehicles.map(v=>v.no));
+  DEFAULT_VEHICLES.forEach(v=>{ if(!known.has(v.no)){ appState.vehicles.push({...v}); changed = true; } });
+  if (changed) localStorage.setItem('drs_vehicles', JSON.stringify(appState.vehicles));
+})();
+
+// 車種の候補リスト（車両マスタから動的生成）
+function vtypeList(extra) {
+  const set = new Set(appState.vehicles.map(v=>v.vtype).filter(Boolean));
+  if (!set.size) VTYPES.forEach(t=>set.add(t));
+  if (extra) set.add(extra);
+  return [...set].sort();
+}
+function vtypeOptions(current) {
+  return vtypeList(current).map(t=>`<option ${t===current?'selected':''}>${t}</option>`).join('');
+}
 
 function save() {
   localStorage.setItem('drs_reports', JSON.stringify(appState.reports));
@@ -744,7 +890,7 @@ function buildS1() {
       <div class="field"><label>車種</label>
         <select id="f_vt">
           <option value="">選択してください</option>
-          ${VTYPES.map(t=>`<option>${t}</option>`).join('')}
+          ${vtypeOptions()}
         </select></div>
     </div>
   </div>`;
@@ -1344,7 +1490,7 @@ function reportEditFormHTML(r, prefix) {
     </div>
     <div class="row2">
       <div class="field"><label>車両番号</label><input type="text" id="${p}_veh" value="${(r.vehicle||'').replace(/"/g,'&quot;')}" list="vehMasterList2"></div>
-      <div class="field"><label>車種</label><select id="${p}_vt"><option value="">—</option>${VTYPES.map(t=>`<option ${r.vtype===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="field"><label>車種</label><select id="${p}_vt"><option value="">—</option>${vtypeOptions(r.vtype)}</select></div>
     </div>
     <datalist id="vehMasterList2">${appState.vehicles.map(v=>`<option value="${v.no}">`).join('')}</datalist>
     <div class="row2">
@@ -2229,17 +2375,19 @@ function reactivateDriver(id) {
 
 // ─── 車両管理（車両番号⇔車種マスタ） ───
 function renderVehiclePanel() {
-  const typeSel = document.getElementById('new-veh-type');
-  if (typeSel && !typeSel.options.length) {
-    typeSel.innerHTML = '<option value="">選択してください</option>' + VTYPES.map(t=>`<option>${t}</option>`).join('');
-  }
+  const dl = document.getElementById('vtypeDl');
+  if (dl) dl.innerHTML = vtypeList().map(t=>`<option value="${t}">`).join('');
   const tbody = appState.vehicles.map((v,i)=>`
     <tr>
       <td>${v.no}</td>
+      <td><input type="text" list="vtypeDl" value="${(v.vtype||'').replace(/"/g,'&quot;')}"
+        onchange="updateVehicleType(${i}, this.value)"
+        style="padding:6px 10px;border:2px solid var(--blue-soft);border-radius:6px;background:var(--bg);font-family:inherit;font-size:13px;width:100%;max-width:220px"></td>
       <td>
-        <select onchange="updateVehicleType(${i}, this.value)" style="padding:6px 10px;border:2px solid var(--blue-soft);border-radius:6px;background:var(--bg);font-family:inherit;font-size:13px">
+        <select onchange="updateVehicleCo(${i}, this.value)" style="padding:6px 10px;border:2px solid var(--blue-soft);border-radius:6px;background:var(--bg);font-family:inherit;font-size:13px">
           <option value="">—</option>
-          ${VTYPES.map(t=>`<option ${v.vtype===t?'selected':''}>${t}</option>`).join('')}
+          <option ${v.co==='正光'?'selected':''}>正光</option>
+          <option ${v.co==='イシス'?'selected':''}>イシス</option>
         </select>
       </td>
       <td>
@@ -2249,26 +2397,33 @@ function renderVehiclePanel() {
     </tr>`).join('');
   const el = document.getElementById('vehicleTable');
   if (el) el.innerHTML = `
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">登録台数：${appState.vehicles.length}台（正光 ${appState.vehicles.filter(v=>v.co==='正光').length}／イシス ${appState.vehicles.filter(v=>v.co==='イシス').length}）</div>
     <table class="driver-table">
-      <thead><tr><th>車両番号</th><th>車種</th><th>操作</th></tr></thead>
-      <tbody>${tbody||'<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:24px">車両が登録されていません</td></tr>'}</tbody>
+      <thead><tr><th>車両番号</th><th>車種</th><th>会社</th><th>操作</th></tr></thead>
+      <tbody>${tbody||'<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px">車両が登録されていません</td></tr>'}</tbody>
     </table>`;
 }
 
 function addVehicle() {
   const no = document.getElementById('new-veh-no').value.trim();
-  const vtype = document.getElementById('new-veh-type').value;
+  const vtype = document.getElementById('new-veh-type').value.trim();
+  const co = document.getElementById('new-veh-co').value;
   if (!no) { alert('車両番号を入力してください'); return; }
   if (appState.vehicles.some(v=>v.no===no)) { alert('この車両番号は登録済みです'); return; }
-  appState.vehicles.push({no, vtype});
+  appState.vehicles.push({no, vtype, co});
   save();
   document.getElementById('new-veh-no').value='';
   document.getElementById('new-veh-type').value='';
+  document.getElementById('new-veh-co').value='';
   renderVehiclePanel();
 }
 
 function updateVehicleType(i, vtype) {
-  if (appState.vehicles[i]) { appState.vehicles[i].vtype = vtype; save(); }
+  if (appState.vehicles[i]) { appState.vehicles[i].vtype = vtype.trim(); save(); }
+}
+
+function updateVehicleCo(i, co) {
+  if (appState.vehicles[i]) { appState.vehicles[i].co = co; save(); }
 }
 
 function renameVehicle(i) {
