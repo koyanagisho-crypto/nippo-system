@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- nippo-system v6.1 (web) — https://github.com/koyanagisho-crypto/nippo-system -->
+<!-- nippo-system v6.2 (web+cloud) — https://github.com/koyanagisho-crypto/nippo-system -->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -298,6 +298,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','N
       <p>正光運輸株式会社</p>
     </div>
     <div class="hdr-actions">
+      <button class="hdr-btn sync-badge" onclick="cloudRefresh(true)"></button>
       <button class="hdr-btn" onclick="gotoAdmin()">⚙ 管理者</button>
     </div>
   </div>
@@ -391,6 +392,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','N
     <div class="hdr-logo">⚙</div>
     <div class="hdr-title"><h1>管理者ダッシュボード</h1><p>正光運輸株式会社</p></div>
     <div class="hdr-actions">
+      <button class="hdr-btn sync-badge" onclick="cloudRefresh(true)"></button>
       <button class="hdr-btn" onclick="showPage('page-driver')">← 入力画面</button>
       <button class="hdr-btn danger" onclick="adminLogout()">ログアウト</button>
     </div>
@@ -744,7 +746,15 @@ let appState = {
   if (changed) localStorage.setItem('drs_reports', JSON.stringify(appState.reports));
 })();
 
-// 車両マスタ移行: v6デモデータの整理 + DEFAULT_VEHICLES の未登録分を自動追加
+// DEFAULT_VEHICLES の未登録分を車両マスタへ自動追加（一覧更新の反映用）
+function mergeDefaultVehicles() {
+  let changed = false;
+  const known = new Set(appState.vehicles.map(v=>v.no));
+  DEFAULT_VEHICLES.forEach(v=>{ if(!known.has(v.no)){ appState.vehicles.push({...v}); changed = true; } });
+  return changed;
+}
+
+// 車両マスタ移行: v6デモデータの整理 + 実データの取り込み
 (function migrateVehicles(){
   let changed = false;
   // v6のデモ車両（架空）を削除・置換
@@ -754,9 +764,7 @@ let appState = {
   if (appState.vehicles.length!==before) changed = true;
   const demo887 = appState.vehicles.find(v=>v.no==='江東100あ887'&&v.vtype==='2t車');
   if (demo887) { demo887.vtype='2t ワイドフルゲート'; demo887.co='イシス'; changed = true; }
-  // 実データの未登録分を追加（DEFAULT_VEHICLES更新が既存ブラウザにも反映される）
-  const known = new Set(appState.vehicles.map(v=>v.no));
-  DEFAULT_VEHICLES.forEach(v=>{ if(!known.has(v.no)){ appState.vehicles.push({...v}); changed = true; } });
+  if (mergeDefaultVehicles()) changed = true;
   if (changed) localStorage.setItem('drs_vehicles', JSON.stringify(appState.vehicles));
 })();
 
@@ -776,7 +784,154 @@ function save() {
   localStorage.setItem('drs_drivers', JSON.stringify(appState.drivers));
   localStorage.setItem('drs_vehicles', JSON.stringify(appState.vehicles));
   localStorage.setItem('drs_folders', JSON.stringify(appState.folders));
+  cloudSync(); // クラウド有効時は差分をアップロード（非同期・失敗してもローカルには保存済み）
 }
+
+// ═══════════════════════════════════════
+//  CLOUD SYNC（Supabase / PostgREST）
+//  全端末でデータを共有する。未設定の場合はローカルモード（従来どおり）で動作。
+// ═══════════════════════════════════════
+// Supabaseプロジェクト発行後、ここに記入して push すれば全端末がクラウドモードになる
+const CLOUD_CONFIG = {
+  url: '',      // 例: 'https://xxxxx.supabase.co'
+  anonKey: '',  // Project Settings → API → anon public キー
+};
+// 検証用にlocalStorageで上書き可能（通常運用では CLOUD_CONFIG を使う）
+const CLOUD = {
+  url: (localStorage.getItem('drs_cloud_url') || CLOUD_CONFIG.url).replace(/\/$/,''),
+  key: localStorage.getItem('drs_cloud_key') || CLOUD_CONFIG.anonKey,
+};
+const cloudOn = () => !!(CLOUD.url && CLOUD.key);
+
+const SYNC_TABLES = { reports:'id', drivers:'id', vehicles:'no', folders:'id' };
+let cloudShadow = {};   // "tbl:id" → 同期済みJSON（差分検出用）
+let cloudState = { syncing:false, lastSync:null, error:null, loaded:false };
+let _lastRefresh = 0;
+
+async function cloudFetch(path, opts={}) {
+  const res = await fetch(CLOUD.url + '/rest/v1/' + path, {
+    ...opts,
+    headers: {
+      'apikey': CLOUD.key,
+      'Authorization': 'Bearer ' + CLOUD.key,
+      'Content-Type': 'application/json',
+      ...(opts.headers||{}),
+    },
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res;
+}
+
+async function cloudLoadAll() {
+  const rows = await (await cloudFetch('app_rows?select=tbl,id,data')).json();
+  const byTbl = { reports:[], drivers:[], vehicles:[], folders:[] };
+  const shadow = {};
+  rows.forEach(r => {
+    if (byTbl[r.tbl]) { byTbl[r.tbl].push(r.data); shadow[r.tbl + ':' + r.id] = JSON.stringify(r.data); }
+  });
+  return { byTbl, shadow };
+}
+
+// ローカル状態とshadowの差分をクラウドへ反映（upsert＋delete）
+async function cloudSync() {
+  if (!cloudOn() || cloudState.syncing) return;
+  cloudState.syncing = true; updateSyncBadge();
+  try {
+    const upserts = [], deletes = [];
+    for (const tbl of Object.keys(SYNC_TABLES)) {
+      const live = new Set();
+      for (const item of appState[tbl]) {
+        const id = String(item[SYNC_TABLES[tbl]]);
+        live.add(tbl + ':' + id);
+        const j = JSON.stringify(item);
+        if (cloudShadow[tbl + ':' + id] !== j) upserts.push({ tbl, id, data: item });
+      }
+      for (const k of Object.keys(cloudShadow)) {
+        if (k.startsWith(tbl + ':') && !live.has(k)) deletes.push(k);
+      }
+    }
+    if (upserts.length) {
+      await cloudFetch('app_rows?on_conflict=tbl,id', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(upserts),
+      });
+      upserts.forEach(u => { cloudShadow[u.tbl + ':' + u.id] = JSON.stringify(u.data); });
+    }
+    for (const k of deletes) {
+      const i = k.indexOf(':');
+      const tbl = k.slice(0, i), id = k.slice(i + 1);
+      await cloudFetch(`app_rows?tbl=eq.${encodeURIComponent(tbl)}&id=eq.${encodeURIComponent(id)}`, { method: 'DELETE' });
+      delete cloudShadow[k];
+    }
+    cloudState.error = null; cloudState.lastSync = new Date();
+  } catch (e) {
+    cloudState.error = e.message; // ローカルには保存済み。次のsave/refreshで再送される
+  } finally {
+    cloudState.syncing = false; updateSyncBadge();
+  }
+}
+
+// クラウド→ローカルへ取り込み（起動時・管理画面表示時・手動更新）
+async function cloudRefresh(force=false) {
+  if (!cloudOn()) { updateSyncBadge(); return; }
+  if (!force && Date.now() - _lastRefresh < 10000) return;      // 10秒以内の連続リフレッシュは抑制
+  if (appState.step > 0) return;                                 // ドライバー入力中は上書きしない
+  if (document.getElementById('approvalDetail')?.style.display === 'block') return; // 詳細/編集画面表示中も抑制
+  _lastRefresh = Date.now();
+  cloudState.syncing = true; updateSyncBadge();
+  try {
+    const { byTbl, shadow } = await cloudLoadAll();
+    if (Object.keys(shadow).length === 0 && !cloudState.loaded) {
+      // クラウドが空 → このブラウザのデータを初期データとして移行
+      cloudState.loaded = true; cloudState.syncing = false;
+      await cloudSync();
+    } else {
+      appState.reports = byTbl.reports;
+      if (byTbl.drivers.length) appState.drivers = byTbl.drivers;
+      if (byTbl.folders.length || appState.folders.length===0) appState.folders = byTbl.folders;
+      appState.vehicles = byTbl.vehicles;
+      cloudShadow = shadow;
+      cloudState.loaded = true;
+      mergeDefaultVehicles();  // 新しいDEFAULT_VEHICLESがあればクラウドにも反映
+      localStorage.setItem('drs_reports', JSON.stringify(appState.reports));
+      localStorage.setItem('drs_drivers', JSON.stringify(appState.drivers));
+      localStorage.setItem('drs_vehicles', JSON.stringify(appState.vehicles));
+      localStorage.setItem('drs_folders', JSON.stringify(appState.folders));
+      cloudState.syncing = false;
+      cloudSync(); // マージ分があれば送信
+      rerenderAfterRefresh();
+    }
+    cloudState.error = null; cloudState.lastSync = new Date();
+  } catch (e) {
+    cloudState.error = e.message;
+  } finally {
+    cloudState.syncing = false; updateSyncBadge();
+  }
+}
+
+function rerenderAfterRefresh() {
+  initDriver();
+  if (appState.adminLoggedIn && document.getElementById('page-admin').classList.contains('active')) {
+    updateBadge(); renderDash(); renderDriverPanel(); renderVehiclePanel(); renderFolderPanel(); renderRecords(); renderKpi();
+    if (document.getElementById('approvalList')?.style.display !== 'none') renderApprovalList();
+  }
+}
+
+function updateSyncBadge() {
+  document.querySelectorAll('.sync-badge').forEach(el => {
+    if (!cloudOn()) { el.textContent = '💾 ローカル保存'; el.title = 'クラウド未設定。データはこの端末にのみ保存されます'; return; }
+    if (cloudState.syncing) { el.textContent = '☁ 同期中…'; }
+    else if (cloudState.error) { el.textContent = '⚠ 同期エラー'; el.title = cloudState.error + '（データはこの端末に保存済み。通信回復後に自動再送されます）'; }
+    else if (cloudState.lastSync) { el.textContent = '☁ 同期済み ' + cloudState.lastSync.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}); el.title = 'クリックで最新データを取得'; }
+    else { el.textContent = '☁ クラウド'; }
+  });
+}
+
+// 管理画面表示中は60秒ごとに最新データを取得（入力・編集中はスキップ）
+setInterval(() => {
+  if (document.visibilityState === 'visible' && cloudOn()) cloudRefresh();
+}, 60000);
 
 // ═══════════════════════════════════════
 //  PAGE ROUTING
@@ -787,7 +942,7 @@ function showPage(id) {
 }
 
 function gotoAdmin() {
-  if (appState.adminLoggedIn) { showPage('page-admin'); renderAdmin(); }
+  if (appState.adminLoggedIn) { showPage('page-admin'); renderAdmin(); cloudRefresh(); }
   else showPage('page-login');
 }
 
@@ -799,6 +954,7 @@ function doLogin() {
     document.getElementById('loginErr').style.display = 'none';
     showPage('page-admin');
     renderAdmin();
+    cloudRefresh();
   } else {
     document.getElementById('loginErr').style.display = 'block';
   }
@@ -2741,6 +2897,8 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 //  BOOT
 // ═══════════════════════════════════════
 initDriver();
+updateSyncBadge();
+cloudRefresh(true); // クラウド有効時は最新データを取得（初回はローカル→クラウド移行）
 </script>
 </body>
 </html>
