@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- nippo-system v6.2 (web+cloud) — https://github.com/koyanagisho-crypto/nippo-system -->
+<!-- nippo-system v6.3 (cloud-live) — https://github.com/koyanagisho-crypto/nippo-system -->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -524,9 +524,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','N
       <div class="sec-title">乗務員管理</div>
       <div class="card" style="margin-bottom:16px">
         <div class="card-title">➕ 乗務員の追加</div>
-        <div class="row3">
+        <div class="row4">
           <div class="field"><label>氏名 <span class="req">必須</span></label><input type="text" id="new-drv-name" placeholder="例：田中 太郎"></div>
-          <div class="field"><label>社員番号</label><input type="text" id="new-drv-id" placeholder="例：D001"></div>
+          <div class="field"><label>会社</label><select id="new-drv-co"><option value="">—</option><option>正光</option><option>イシス</option></select></div>
+          <div class="field"><label>社員番号</label><input type="text" id="new-drv-id" placeholder="例：S053"></div>
           <div class="field"><label>担当車両</label><input type="text" id="new-drv-veh" placeholder="例：江東100あ887"></div>
         </div>
         <button class="btn-primary" style="width:auto;padding:10px 24px;margin-top:4px" onclick="addDriver()">追加する</button>
@@ -712,16 +713,95 @@ const DEFAULT_VEHICLES = [
 {"no":"江東100あ3155","vtype":"2t ロング","co":"正光"}
 ];
 
+// 乗務員マスタ初期データ（正光・イシス 社員名簿.xlsx, 正光52名＋イシス26名）
+// 名簿更新時はここを差し替えれば、未登録分が自動追加される（氏名で照合）
+const DEFAULT_DRIVERS = [
+{"id":"S001","name":"浅原 安幸","vehicle":"","co":"正光","active":true},
+{"id":"I001","name":"秋山 実","vehicle":"","co":"イシス","active":true},
+{"id":"S002","name":"阿部 光夫","vehicle":"","co":"正光","active":true},
+{"id":"I002","name":"新井 寛","vehicle":"","co":"イシス","active":true},
+{"id":"S003","name":"浦山 賢一","vehicle":"","co":"正光","active":true},
+{"id":"I003","name":"奥居 則之","vehicle":"","co":"イシス","active":true},
+{"id":"S004","name":"小高 憲一","vehicle":"","co":"正光","active":true},
+{"id":"I004","name":"木村 勝","vehicle":"","co":"イシス","active":true},
+{"id":"S005","name":"加戸 則之","vehicle":"","co":"正光","active":true},
+{"id":"I005","name":"桐井 光雄","vehicle":"","co":"イシス","active":true},
+{"id":"S006","name":"菊井 元博","vehicle":"","co":"正光","active":true},
+{"id":"I006","name":"小高 誠太郎","vehicle":"","co":"イシス","active":true},
+{"id":"S007","name":"日下 裕文","vehicle":"","co":"正光","active":true},
+{"id":"I007","name":"小林 芳春","vehicle":"","co":"イシス","active":true},
+{"id":"S008","name":"小柳 直也","vehicle":"","co":"正光","active":true},
+{"id":"I008","name":"笹原 文章","vehicle":"","co":"イシス","active":true},
+{"id":"S009","name":"斉藤 隆","vehicle":"","co":"正光","active":true},
+{"id":"I009","name":"新藤 和明","vehicle":"","co":"イシス","active":true},
+{"id":"S010","name":"佐野 弘幸","vehicle":"","co":"正光","active":true},
+{"id":"I010","name":"鈴木 正雄","vehicle":"","co":"イシス","active":true},
+{"id":"S011","name":"塩沢 宗弘","vehicle":"","co":"正光","active":true},
+{"id":"I011","name":"芹澤 俊一","vehicle":"","co":"イシス","active":true},
+{"id":"S012","name":"白須 博之","vehicle":"","co":"正光","active":true},
+{"id":"I012","name":"高橋 秀文","vehicle":"","co":"イシス","active":true},
+{"id":"S013","name":"杉浦 正和","vehicle":"","co":"正光","active":true},
+{"id":"I013","name":"玉城 正太","vehicle":"","co":"イシス","active":true},
+{"id":"S014","name":"鈴木 孝司","vehicle":"","co":"正光","active":true},
+{"id":"I014","name":"田村 巧","vehicle":"","co":"イシス","active":true},
+{"id":"S015","name":"塚田 鉄雄","vehicle":"","co":"正光","active":true},
+{"id":"I015","name":"中村 卓也","vehicle":"","co":"イシス","active":true},
+{"id":"S016","name":"塚腰 誠志","vehicle":"","co":"正光","active":true},
+{"id":"I016","name":"永田 和昭","vehicle":"","co":"イシス","active":true},
+{"id":"S017","name":"綱 郁夫","vehicle":"","co":"正光","active":true},
+{"id":"I017","name":"林 佳紀","vehicle":"","co":"イシス","active":true},
+{"id":"S018","name":"中曽根 晋作","vehicle":"","co":"正光","active":true},
+{"id":"I018","name":"藤田 和浩","vehicle":"","co":"イシス","active":true},
+{"id":"S019","name":"中川 竜弘","vehicle":"","co":"正光","active":true},
+{"id":"I019","name":"道田 佳充","vehicle":"","co":"イシス","active":true},
+{"id":"S020","name":"花ケ崎 敏男","vehicle":"","co":"正光","active":true},
+{"id":"I020","name":"山口 洋平","vehicle":"","co":"イシス","active":true},
+{"id":"S021","name":"深尾 信之","vehicle":"","co":"正光","active":true},
+{"id":"I021","name":"山本 雄三","vehicle":"","co":"イシス","active":true},
+{"id":"S022","name":"藤田 秀一郎","vehicle":"","co":"正光","active":true},
+{"id":"I022","name":"吉田 仁","vehicle":"","co":"イシス","active":true},
+{"id":"S023","name":"枡岡 慶彦","vehicle":"","co":"正光","active":true},
+{"id":"I023","name":"吉田 悠人","vehicle":"","co":"イシス","active":true},
+{"id":"S024","name":"三上 貴弘","vehicle":"","co":"正光","active":true},
+{"id":"I024","name":"小笠原 聡","vehicle":"","co":"イシス","active":true},
+{"id":"S025","name":"岩﨑 祐一","vehicle":"","co":"正光","active":true},
+{"id":"I025","name":"野中 公雄","vehicle":"","co":"イシス","active":true},
+{"id":"S026","name":"大友 裕之","vehicle":"","co":"正光","active":true},
+{"id":"I026","name":"高橋 英則","vehicle":"","co":"イシス","active":true},
+{"id":"S027","name":"玉井 孝","vehicle":"","co":"正光","active":true},
+{"id":"S028","name":"江口 毅志","vehicle":"","co":"正光","active":true},
+{"id":"S029","name":"河西 慎一郎","vehicle":"","co":"正光","active":true},
+{"id":"S030","name":"上地 玄幸","vehicle":"","co":"正光","active":true},
+{"id":"S031","name":"宮川 松冶","vehicle":"","co":"正光","active":true},
+{"id":"S032","name":"増山 忠義","vehicle":"","co":"正光","active":true},
+{"id":"S033","name":"瀬海 大作","vehicle":"","co":"正光","active":true},
+{"id":"S034","name":"安野 貢造","vehicle":"","co":"正光","active":true},
+{"id":"S035","name":"五味 照雄","vehicle":"","co":"正光","active":true},
+{"id":"S036","name":"河村 昌彦","vehicle":"","co":"正光","active":true},
+{"id":"S037","name":"根岸 大輔","vehicle":"","co":"正光","active":true},
+{"id":"S038","name":"上田 和広","vehicle":"","co":"正光","active":true},
+{"id":"S039","name":"テンナコン チャマット プンサラ","vehicle":"","co":"正光","active":true},
+{"id":"S040","name":"荒井 正春","vehicle":"","co":"正光","active":true},
+{"id":"S041","name":"染谷 貴弘","vehicle":"","co":"正光","active":true},
+{"id":"S042","name":"井森 利博","vehicle":"","co":"正光","active":true},
+{"id":"S043","name":"宮本 豊","vehicle":"","co":"正光","active":true},
+{"id":"S044","name":"石島 喜久夫","vehicle":"","co":"正光","active":true},
+{"id":"S045","name":"小笠原 敏之","vehicle":"","co":"正光","active":true},
+{"id":"S046","name":"東城 照仁","vehicle":"","co":"正光","active":true},
+{"id":"S047","name":"三好 鉄也","vehicle":"","co":"正光","active":true},
+{"id":"S048","name":"深谷 勝弘","vehicle":"","co":"正光","active":true},
+{"id":"S049","name":"餅田 誠","vehicle":"","co":"正光","active":true},
+{"id":"S050","name":"石井 英徳","vehicle":"","co":"正光","active":true},
+{"id":"S051","name":"吉田 賢一","vehicle":"","co":"正光","active":true},
+{"id":"S052","name":"高橋 文正","vehicle":"","co":"正光","active":true}
+];
+
 let appState = {
   step: 0,
   selectedCo: null,
   destinations: [{label:'A', name:'', area:'', time:'', odo:'', items:'', client:'', count:'', from:''}],
   reports: JSON.parse(localStorage.getItem('drs_reports')||'[]'),
-  drivers: JSON.parse(localStorage.getItem('drs_drivers')||JSON.stringify([
-    {id:'D001',name:'田中 太郎',vehicle:'江東100あ887',active:true},
-    {id:'D002',name:'佐藤 次郎',vehicle:'江東100い234',active:true},
-    {id:'D003',name:'鈴木 三郎',vehicle:'江東100う567',active:true},
-  ])),
+  drivers: JSON.parse(localStorage.getItem('drs_drivers')||'[]'),
   vehicles: JSON.parse(localStorage.getItem('drs_vehicles')||'[]'),
   folders: JSON.parse(localStorage.getItem('drs_folders')||'[]'),
   adminLoggedIn: false,
@@ -753,6 +833,25 @@ function mergeDefaultVehicles() {
   DEFAULT_VEHICLES.forEach(v=>{ if(!known.has(v.no)){ appState.vehicles.push({...v}); changed = true; } });
   return changed;
 }
+
+// DEFAULT_DRIVERS の未登録分を乗務員マスタへ自動追加（氏名で照合）
+function mergeDefaultDrivers() {
+  let changed = false;
+  const known = new Set(appState.drivers.map(d=>d.name));
+  DEFAULT_DRIVERS.forEach(d=>{ if(!known.has(d.name)){ appState.drivers.push({...d}); changed = true; } });
+  return changed;
+}
+
+// 乗務員マスタ移行: v6デモ乗務員（架空）を削除し、社員名簿を取り込み
+(function migrateDrivers(){
+  let changed = false;
+  const demo = {'D001':'田中 太郎','D002':'佐藤 次郎','D003':'鈴木 三郎'};
+  const before = appState.drivers.length;
+  appState.drivers = appState.drivers.filter(d=>demo[d.id]!==d.name);
+  if (appState.drivers.length!==before) changed = true;
+  if (mergeDefaultDrivers()) changed = true;
+  if (changed) localStorage.setItem('drs_drivers', JSON.stringify(appState.drivers));
+})();
 
 // 車両マスタ移行: v6デモデータの整理 + 実データの取り込み
 (function migrateVehicles(){
@@ -793,8 +892,8 @@ function save() {
 // ═══════════════════════════════════════
 // Supabaseプロジェクト発行後、ここに記入して push すれば全端末がクラウドモードになる
 const CLOUD_CONFIG = {
-  url: '',      // 例: 'https://xxxxx.supabase.co'
-  anonKey: '',  // Project Settings → API → anon public キー
+  url: 'https://ogoxaxqbecutmpsobhdp.supabase.co',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nb3hheHFiZWN1dG1wc29iaGRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMDg0OTIsImV4cCI6MjEwMjY4NDQ5Mn0.V0-rXmFFIUa8Idtt_hTnA5zmhiGJ6luo7C23VNQSmoY',
 };
 // 検証用にlocalStorageで上書き可能（通常運用では CLOUD_CONFIG を使う）
 const CLOUD = {
@@ -888,12 +987,13 @@ async function cloudRefresh(force=false) {
       await cloudSync();
     } else {
       appState.reports = byTbl.reports;
-      if (byTbl.drivers.length) appState.drivers = byTbl.drivers;
-      if (byTbl.folders.length || appState.folders.length===0) appState.folders = byTbl.folders;
+      appState.drivers = byTbl.drivers;
+      appState.folders = byTbl.folders;
       appState.vehicles = byTbl.vehicles;
       cloudShadow = shadow;
       cloudState.loaded = true;
-      mergeDefaultVehicles();  // 新しいDEFAULT_VEHICLESがあればクラウドにも反映
+      mergeDefaultVehicles();  // DEFAULT_VEHICLES/DRIVERSの更新分があればクラウドにも反映
+      mergeDefaultDrivers();
       localStorage.setItem('drs_reports', JSON.stringify(appState.reports));
       localStorage.setItem('drs_drivers', JSON.stringify(appState.drivers));
       localStorage.setItem('drs_vehicles', JSON.stringify(appState.vehicles));
@@ -1024,7 +1124,12 @@ function buildForms() { buildS1(); buildS2(); buildS3(); }
 function buildS1() {
   const co = COMPANIES.find(x=>x.id===appState.selectedCo);
   const activeDrivers = appState.drivers.filter(d=>d.active);
-  const driverOpts = activeDrivers.map(d=>`<option value="${d.id}" data-veh="${d.vehicle}">${d.name}</option>`).join('');
+  const opt = d => `<option value="${d.id}" data-veh="${d.vehicle||''}">${d.name}</option>`;
+  const grp = (label, list) => list.length ? `<optgroup label="${label}">${list.map(opt).join('')}</optgroup>` : '';
+  const driverOpts =
+    grp('正光運輸', activeDrivers.filter(d=>d.co==='正光')) +
+    grp('イシスネットワークス', activeDrivers.filter(d=>d.co==='イシス')) +
+    grp('その他', activeDrivers.filter(d=>d.co!=='正光'&&d.co!=='イシス'));
 
   let html = `<div class="info-badge">${co.icon} ${co.name} の日報を作成中</div>`;
 
@@ -2480,9 +2585,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 // Driver management
 function renderDriverPanel() {
-  const tbody = appState.drivers.map(d=>`
+  const order = {'正光':0,'イシス':1};
+  const sorted = [...appState.drivers].sort((a,b)=>(order[a.co]??2)-(order[b.co]??2) || String(a.id).localeCompare(String(b.id)));
+  const tbody = sorted.map(d=>`
     <tr>
       <td>${d.name}</td>
+      <td style="color:var(--text-muted)">${d.co||'—'}</td>
       <td style="color:var(--text-muted)">${d.id}</td>
       <td style="color:var(--text-muted)">${d.vehicle||'—'}</td>
       <td><span class="tag ${d.active?'approved':'draft'}">${d.active?'在籍中':'退職'}</span></td>
@@ -2492,23 +2600,27 @@ function renderDriverPanel() {
     </tr>`).join('');
 
   document.getElementById('driverTable').innerHTML = `
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">在籍：${appState.drivers.filter(d=>d.active).length}名（正光 ${appState.drivers.filter(d=>d.active&&d.co==='正光').length}／イシス ${appState.drivers.filter(d=>d.active&&d.co==='イシス').length}）</div>
     <table class="driver-table">
-      <thead><tr><th>氏名</th><th>社員番号</th><th>担当車両</th><th>状態</th><th>操作</th></tr></thead>
-      <tbody>${tbody||'<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px">乗務員がいません</td></tr>'}</tbody>
+      <thead><tr><th>氏名</th><th>会社</th><th>社員番号</th><th>担当車両</th><th>状態</th><th>操作</th></tr></thead>
+      <tbody>${tbody||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">乗務員がいません</td></tr>'}</tbody>
     </table>`;
 }
 
 function addDriver() {
   const name = document.getElementById('new-drv-name').value.trim();
   if (!name) { alert('氏名を入力してください'); return; }
-  const id = 'D'+String(Date.now()).slice(-4);
+  const id = document.getElementById('new-drv-id').value.trim() || 'D'+String(Date.now()).slice(-4);
+  if (appState.drivers.some(d=>d.id===id)) { alert('この社員番号は登録済みです'); return; }
   appState.drivers.push({
     id, name,
+    co: document.getElementById('new-drv-co').value,
     vehicle: document.getElementById('new-drv-veh').value.trim(),
     active: true
   });
   save();
   document.getElementById('new-drv-name').value='';
+  document.getElementById('new-drv-co').value='';
   document.getElementById('new-drv-id').value='';
   document.getElementById('new-drv-veh').value='';
   renderDriverPanel();
